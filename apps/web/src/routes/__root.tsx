@@ -4,6 +4,7 @@ import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 						<AppSidebar />
 						<SidebarInset>{children}</SidebarInset>
 					</SidebarProvider>
+					<Toaster />
 				</QueryClientProvider>
 				<TanStackDevtools
 					config={{

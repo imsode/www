@@ -1,9 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { ArrowRight, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import {
+	ArrowRight,
+	CheckCircle2,
+	Loader2,
+	Plus,
+	RefreshCw,
+	User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { CameraCapture } from "@/components/CameraCapture";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,19 +18,43 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 // --- Server Functions ---
 
+// Demo User ID for MVP
+const DEMO_USER_ID = "demo-user";
+
+// Fetch the presigned URL for viewing the user's selfie (if it exists)
+// In a real app, this would look up the user's selfie key in the DB
 export const fetchSelfie = createServerFn({ method: "GET" }).handler(
 	async () => {
-		// Simulate server delay
-		await new Promise((resolve) => setTimeout(resolve, 500));
-		// Return null to simulate no existing selfie, or a URL string if one exists.
-		// For MVP, let's return null so the user can try the upload flow,
-		// or we can randomise it. Let's return null to force interaction.
+		// Hardcoded logic for MVP: Check if we have a way to persist this check?
+		// Actually, for the MVP without auth, we can't easily "know" if the user has a selfie
+		// unless we store a cookie or just assume the demo user logic.
+		// Let's try to fetch the selfie for the demo user.
+		try {
+			const response = await fetch(
+				// Assuming the API is running on localhost:3000 for dev, or relative path if proxy
+				// For server functions, we need an absolute URL usually, or configured base
+				// Let's mock the logic by calling the internal API function if possible,
+				// but here we are in the "web" app calling "api" app.
+				// For now, let's return null and rely on the client side state for the session
+				// UNLESS we actually implemented the persistence fully.
+				//
+				// Given the instructions, we want persistence.
+				// We'll implement a basic fetch to the API.
+				`http://localhost:8787/api/selfies/users/${DEMO_USER_ID}/selfies/current.jpg/url`,
+			);
+			if (response.ok) {
+				const data = (await response.json()) as { url: string };
+				return data.url;
+			}
+		} catch {
+			// Ignore errors (no selfie found)
+		}
 		return null;
 	},
 );
 
 type StartGenerationInput = {
-	selfieUrl: string;
+	selfieUrl: string; // This will now be the R2 key ideally, or we pass the URL
 	templateId: string;
 };
 
@@ -39,11 +70,8 @@ export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
 	.inputValidator((data: { jobId: string }) => data)
 	.handler(async ({ data }) => {
 		console.log("Checking status for job:", data.jobId);
-		// Simulate processing
-		// In a real app, this would check a DB or external service
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		// Randomly progress status for demo purposes
 		const rand = Math.random();
 		if (rand < 0.1)
 			return {
@@ -96,6 +124,7 @@ function CreatePage() {
 	const [step, setStep] = useState<
 		"selfie" | "template" | "generating" | "completed"
 	>("selfie");
+	// selfieUrl can be a local blob URL (preview) or remote R2 URL
 	const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
 	const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
 		null,
@@ -105,13 +134,14 @@ function CreatePage() {
 		null,
 	);
 
-	// Fetch existing selfie
-	const { data: existingSelfie } = useQuery({
+	// Fetch existing selfie from server
+	const { data: existingSelfie, isLoading: isLoadingSelfie } = useQuery({
 		queryKey: ["selfie"],
 		queryFn: () => fetchSelfie(),
+		retry: false,
 	});
 
-	// Effect to set selfie if exists
+	// Sync server selfie state to local state
 	useEffect(() => {
 		if (existingSelfie) {
 			setSelfieUrl(existingSelfie);
@@ -148,8 +178,8 @@ function CreatePage() {
 		}
 	}, [statusData]);
 
-	const handleCapture = (url: string) => {
-		setSelfieUrl(url);
+	const handleAddSelf = () => {
+		toast.info("Please upload your selfie using the mobile app.");
 	};
 
 	const handleRetake = () => {
@@ -183,8 +213,12 @@ function CreatePage() {
 							</p>
 						</div>
 
-						{selfieUrl ? (
-							<Card className="p-6 flex flex-col items-center gap-6">
+						{isLoadingSelfie ? (
+							<div className="flex justify-center py-12">
+								<Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+							</div>
+						) : selfieUrl ? (
+							<Card className="p-6 flex flex-col items-center gap-6 relative overflow-hidden">
 								<div className="relative group">
 									<Avatar className="w-64 h-64 border-4 border-white shadow-lg">
 										<AvatarImage src={selfieUrl} className="object-cover" />
@@ -213,7 +247,25 @@ function CreatePage() {
 								</div>
 							</Card>
 						) : (
-							<CameraCapture onCapture={handleCapture} />
+							<Card className="p-12 flex flex-col items-center justify-center gap-6 text-center border-dashed border-2">
+								<div className="rounded-full bg-gray-100 p-6">
+									<User className="w-12 h-12 text-gray-400" />
+								</div>
+								<div className="space-y-2">
+									<h3 className="font-semibold text-lg">No selfie found</h3>
+									<p className="text-sm text-gray-500 max-w-xs mx-auto">
+										You haven't uploaded a selfie yet.
+									</p>
+								</div>
+								<Button
+									onClick={handleAddSelf}
+									size="lg"
+									className="rounded-full"
+								>
+									<Plus className="mr-2 h-4 w-4" />
+									Add self
+								</Button>
+							</Card>
 						)}
 					</div>
 				)}
