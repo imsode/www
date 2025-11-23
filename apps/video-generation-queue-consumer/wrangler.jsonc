@@ -7,6 +7,7 @@
 	"name": "video-generation-queue-consumer",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-11-21",
+	"compatibility_flags": ["nodejs_compat"],
 	"vars": {
 		"CF_ACCOUNT_ID": "51a5a41f7bd8425703a6f1d92f867f4d"
 	},
