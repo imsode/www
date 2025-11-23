@@ -1,0 +1,32 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "video-generation-queue-consumer",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-11-21",
+	"vars": {
+		"CF_ACCOUNT_ID": "51a5a41f7bd8425703a6f1d92f867f4d"
+	},
+	"hyperdrive": [
+		{
+			"binding": "HYPERDRIVE",
+			"id": "c2e51010796046c79551bf3a6efa3faf",
+			"localConnectionString": "postgres://postgres:postgres@localhost:5432/postgres"
+		}
+	],
+	"queues": {
+		"consumers": [
+			{
+				"queue": "your-story-video-gen-queue",
+				"max_batch_size": 10,
+				"max_batch_timeout": 5
+			}
+		]
+	},
+	"observability": {
+		"enabled": true
+	}
+}

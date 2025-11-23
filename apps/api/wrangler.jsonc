@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-11-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "CF_ACCOUNT_ID": "51a5a41f7bd8425703a6f1d92f867f4d",
+    "SELFIE_BUCKET_NAME": "your-story-selfies",
+    "VIDEO_BUCKET_NAME": "your-story",
+  },
+  "r2_buckets": [
+    {
+      "binding": "VIDEO_BUCKET",
+      "bucket_name": "your-story",
+    },
+    {
+      "binding": "SELFIE_BUCKET",
+      "bucket_name": "your-story-selfies",
+    },
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "c2e51010796046c79551bf3a6efa3faf",
+      "localConnectionString": "postgres://postgres:postgres@localhost:5432/postgres",
+    },
+  ],
+  "queues": {
+    "producers": [
+      {
+        "queue": "your-story-video-gen-queue",
+        "binding": "VIDEO_GENERATION_QUEUE",
+      },
+    ],
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+}

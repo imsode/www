@@ -1,7 +1,12 @@
 {
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ]
+	"eslint.workingDirectories": [
+		{
+			"mode": "auto"
+		}
+	],
+	"editor.defaultFormatter": "biomejs.biome",
+	"files.associations": {
+		"wrangler.json": "jsonc"
+	},
+	"editor.tabSize": 2
 }

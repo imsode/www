@@ -1,0 +1,344 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { ArrowRight, Camera, CheckCircle2, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+
+// --- Server Functions ---
+
+export const fetchSelfie = createServerFn({ method: "GET" }).handler(
+	async () => {
+		// Simulate server delay
+		await new Promise((resolve) => setTimeout(resolve, 500));
+		// Return null to simulate no existing selfie, or a URL string if one exists.
+		// For MVP, let's return null so the user can try the upload flow,
+		// or we can randomise it. Let's return null to force interaction.
+		return null;
+	},
+);
+
+type StartGenerationInput = {
+	selfieUrl: string;
+	templateId: string;
+};
+
+export const startVideoGeneration = createServerFn({ method: "POST" })
+	.inputValidator((data: StartGenerationInput) => data)
+	.handler(async ({ data }) => {
+		console.log("Starting generation with", data);
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+		return { jobId: Math.random().toString(36).substring(7) };
+	});
+
+export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
+	.inputValidator((data: { jobId: string }) => data)
+	.handler(async ({ data }) => {
+		console.log("Checking status for job:", data.jobId);
+		// Simulate processing
+		// In a real app, this would check a DB or external service
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
+		// Randomly progress status for demo purposes
+		const rand = Math.random();
+		if (rand < 0.1)
+			return {
+				status: "completed",
+				videoUrl:
+					"https://videos.pexels.com/video-files/6893205/6893205-hd_1080_1920_25fps.mp4",
+			};
+		if (rand < 0.2) return { status: "failed" };
+		return { status: "processing" };
+	});
+
+// --- Component ---
+
+export const Route = createFileRoute("/create")({
+	component: CreatePage,
+});
+
+const TEMPLATES = [
+	{
+		id: "1",
+		name: "Epic Journey",
+		description: "Perfect for travel highlights",
+		image:
+			"https://images.unsplash.com/photo-1469474932796-b494551f87f4?auto=format&fit=crop&w=400&q=80",
+	},
+	{
+		id: "2",
+		name: "Daily Vlog",
+		description: "Share your day in style",
+		image:
+			"https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=400&q=80",
+	},
+	{
+		id: "3",
+		name: "Cinematic",
+		description: "Movie-like atmosphere",
+		image:
+			"https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&q=80",
+	},
+	{
+		id: "4",
+		name: "Retro Vibes",
+		description: "Vintage aesthetic for cool clips",
+		image:
+			"https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=400&q=80",
+	},
+];
+
+function CreatePage() {
+	const [step, setStep] = useState<
+		"selfie" | "template" | "generating" | "completed"
+	>("selfie");
+	const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
+	const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+		null,
+	);
+	const [jobId, setJobId] = useState<string | null>(null);
+	const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(
+		null,
+	);
+
+	// Fetch existing selfie
+	const { data: existingSelfie } = useQuery({
+		queryKey: ["selfie"],
+		queryFn: () => fetchSelfie(),
+	});
+
+	// Effect to set selfie if exists
+	useEffect(() => {
+		if (existingSelfie) {
+			setSelfieUrl(existingSelfie);
+		}
+	}, [existingSelfie]);
+
+	// Mutation to start generation
+	const startMutation = useMutation({
+		mutationFn: startVideoGeneration,
+		onSuccess: (data) => {
+			setJobId(data.jobId);
+			setStep("generating");
+		},
+	});
+
+	// Polling for status
+	const { data: statusData } = useQuery({
+		queryKey: ["generationStatus", jobId],
+		queryFn: () => checkVideoGenerationStatus({ data: { jobId: jobId ?? "" } }),
+		enabled: !!jobId && step === "generating",
+		refetchInterval: (query) => {
+			const data = query.state.data;
+			if (data?.status === "completed" || data?.status === "failed") {
+				return false;
+			}
+			return 2000;
+		},
+	});
+
+	useEffect(() => {
+		if (statusData?.status === "completed" && statusData.videoUrl) {
+			setGeneratedVideoUrl(statusData.videoUrl);
+			setStep("completed");
+		}
+	}, [statusData]);
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file) {
+			const url = URL.createObjectURL(file);
+			setSelfieUrl(url);
+		}
+	};
+
+	const handleStartGeneration = () => {
+		if (selfieUrl && selectedTemplateId) {
+			startMutation.mutate({
+				data: { selfieUrl, templateId: selectedTemplateId },
+			});
+		}
+	};
+
+	return (
+		<div className="flex flex-col min-h-screen bg-neutral-50">
+			<header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sticky top-0 z-10">
+				<SidebarTrigger className="rounded-full border border-gray-200" />
+				<div>
+					<p className="text-lg font-semibold">Create Video</p>
+				</div>
+			</header>
+
+			<div className="flex-1 container max-w-3xl mx-auto p-4 pb-24">
+				{step === "selfie" && (
+					<div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<div className="text-center space-y-2">
+							<h2 className="text-2xl font-bold">First, let's get your look</h2>
+							<p className="text-gray-500">
+								Take a selfie or choose one to star in your video.
+							</p>
+						</div>
+
+						<Card className="p-6 flex flex-col items-center gap-6">
+							<div className="relative group">
+								<Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+									{selfieUrl ? (
+										<AvatarImage src={selfieUrl} className="object-cover" />
+									) : (
+										<AvatarFallback className="text-4xl bg-gray-100">
+											😊
+										</AvatarFallback>
+									)}
+								</Avatar>
+								<label className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-md">
+									<Camera size={20} />
+									<input
+										type="file"
+										accept="image/*"
+										capture="user"
+										className="hidden"
+										onChange={handleFileChange}
+									/>
+								</label>
+							</div>
+
+							{selfieUrl ? (
+								<Button
+									onClick={() => setStep("template")}
+									className="w-full max-w-xs rounded-full"
+									size="lg"
+								>
+									Looks Good, Continue <ArrowRight className="ml-2 h-4 w-4" />
+								</Button>
+							) : (
+								<Button
+									variant="secondary"
+									className="w-full max-w-xs rounded-full pointer-events-none opacity-50"
+								>
+									Upload a Selfie to Continue
+								</Button>
+							)}
+						</Card>
+					</div>
+				)}
+
+				{step === "template" && (
+					<div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+						<div className="text-center space-y-2">
+							<h2 className="text-2xl font-bold">Choose a Vibe</h2>
+							<p className="text-gray-500">Select a template for your video.</p>
+						</div>
+
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							{TEMPLATES.map((template) => (
+								<button
+									key={template.id}
+									type="button"
+									onClick={() => setSelectedTemplateId(template.id)}
+									className={`w-full text-left cursor-pointer relative rounded-xl overflow-hidden border-2 transition-all ${selectedTemplateId === template.id ? "border-black ring-2 ring-black ring-offset-2" : "border-transparent hover:border-gray-200"}`}
+								>
+									<div className="aspect-[9/16] bg-gray-200 relative">
+										<img
+											src={template.image}
+											alt={template.name}
+											className="w-full h-full object-cover"
+										/>
+										<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+											<h3 className="text-white font-bold text-lg">
+												{template.name}
+											</h3>
+											<p className="text-white/80 text-sm">
+												{template.description}
+											</p>
+										</div>
+										{selectedTemplateId === template.id && (
+											<div className="absolute top-2 right-2 bg-black text-white rounded-full p-1">
+												<CheckCircle2 size={20} />
+											</div>
+										)}
+									</div>
+								</button>
+							))}
+						</div>
+						<div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 flex justify-center">
+							<Button
+								onClick={handleStartGeneration}
+								disabled={!selectedTemplateId || startMutation.isPending}
+								className="w-full max-w-md rounded-full shadow-lg"
+								size="lg"
+							>
+								{startMutation.isPending ? (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								) : null}
+								Generate Video
+							</Button>
+						</div>
+					</div>
+				)}
+
+				{step === "generating" && (
+					<div className="flex flex-col items-center justify-center py-20 space-y-8 animate-in fade-in duration-500">
+						<div className="relative">
+							<div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-75"></div>
+							<div className="relative bg-white p-4 rounded-full shadow-xl">
+								<Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+							</div>
+						</div>
+						<div className="text-center space-y-2">
+							<h2 className="text-2xl font-bold">Creating Magic...</h2>
+							<p className="text-gray-500 max-w-xs mx-auto">
+								We are weaving your story. This might take a moment.
+							</p>
+						</div>
+					</div>
+				)}
+
+				{step === "completed" && generatedVideoUrl && (
+					<div className="space-y-6 animate-in zoom-in-95 duration-500">
+						<div className="text-center space-y-2">
+							<h2 className="text-2xl font-bold">Your Video is Ready!</h2>
+							<p className="text-gray-500">
+								Watch, download, or share your creation.
+							</p>
+						</div>
+
+						<Card className="overflow-hidden bg-black">
+							<div className="aspect-[9/16] relative">
+								<video
+									src={generatedVideoUrl}
+									controls
+									autoPlay
+									loop
+									className="w-full h-full object-contain"
+								>
+									<track kind="captions" />
+								</video>
+							</div>
+						</Card>
+
+						<div className="flex flex-col gap-3">
+							<Button asChild size="lg" className="rounded-full w-full">
+								<Link to="/">Go to Feed</Link>
+							</Button>
+							<Button
+								variant="outline"
+								onClick={() => {
+									setStep("selfie");
+									setGeneratedVideoUrl(null);
+									setJobId(null);
+									setSelectedTemplateId(null);
+								}}
+								className="rounded-full w-full"
+							>
+								Create Another
+							</Button>
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}
