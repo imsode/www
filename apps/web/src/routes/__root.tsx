@@ -42,7 +42,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<HeadContent />
 			</head>
-			<body className="bg-neutral-50">
+			<body className="bg-neutral-50 min-h-screen">
 				<QueryClientProvider client={queryClient}>
 					{children}
 					<Toaster />

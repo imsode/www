@@ -51,7 +51,7 @@ export function VideoActions({
 	const layoutStyles = {
 		overlay: {
 			container:
-				"absolute right-4 bottom-24 z-10 flex flex-col items-end gap-6 text-xs font-semibold text-white",
+				"absolute right-4 bottom-24 z-10 flex flex-col items-center gap-6 text-xs font-semibold text-white",
 			actionWrapper: "flex flex-col items-center gap-4",
 			actionCircle: "flex items-center justify-center", // Transparent background for overlay style usually
 			actionLabel: "text-[11px] font-medium drop-shadow-md",
@@ -119,7 +119,7 @@ export function VideoActions({
 				<Avatar
 					className={cn(
 						"border border-white/60 shadow-sm",
-						isOverlay ? "h-12 w-12" : "h-14 w-14",
+						isOverlay ? "h-10 w-10" : "h-14 w-14",
 					)}
 				>
 					<AvatarImage src={avatar} alt={username} />

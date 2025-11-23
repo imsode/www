@@ -88,7 +88,6 @@ export function AppSidebar({
 										<SidebarMenuButton
 											isActive={item.label === resolvedActive}
 											tooltip={item.label}
-											onClick={item.onClick}
 											asChild
 										>
 											<Link to={item.to}>
@@ -101,9 +100,7 @@ export function AppSidebar({
 											isActive={item.label === resolvedActive}
 											tooltip={item.label}
 											onClick={item.onClick}
-											// asChild={!!item.to}
 										>
-											{/* <div> */}
 											<item.icon className="h-4 w-4" />
 											<span>{item.label}</span>
 										</SidebarMenuButton>

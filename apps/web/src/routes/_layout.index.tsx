@@ -96,7 +96,7 @@ function FeedPage() {
 
 	return (
 		// Use 100dvh to ensure we use the full dynamic viewport height, preventing bottom bar issues on mobile
-		<div className="flex flex-col h-full bg-black text-white overflow-hidden">
+		<div className="flex flex-col h-[100dvh] bg-black text-white overflow-hidden pb-[3.5rem] sm:pb-0">
 			{/* Main Content Area */}
 			<div className="flex-1 w-full overflow-hidden flex justify-center relative">
 				<div className="relative w-full h-full lg:max-w-[calc(100vh*9/16)] overflow-hidden bg-black">

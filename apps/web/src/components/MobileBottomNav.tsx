@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MobileBottomNav() {
 	return (
-		<nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black px-5 py-2 text-white pb-[env(safe-area-inset-bottom,20px)]">
+		<nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-black px-5 pt-2 text-white pb-safe">
 			<div className="mx-auto grid w-full max-w-md grid-cols-3 gap-4 text-center">
 				<Link
 					to="/"

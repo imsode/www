@@ -15,7 +15,7 @@ function Layout() {
 	return (
 		<>
 			{/* Desktop layout */}
-			<div className="hidden sm:block">
+			<div className="hidden relative sm:block max-h-screen min-h-screen">
 				<SidebarProvider
 					style={
 						{
@@ -37,7 +37,7 @@ function Layout() {
 			</div>
 
 			{/* Mobile layout */}
-			<div className="sm:hidden h-full">
+			<div className="relative sm:hidden max-h-screen min-h-screen">
 				<Outlet />
 				<MobileBottomNav />
 			</div>
