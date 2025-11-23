@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { ArrowRight, Camera, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { CameraCapture } from "@/components/CameraCapture";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -147,12 +148,12 @@ function CreatePage() {
 		}
 	}, [statusData]);
 
-	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			const url = URL.createObjectURL(file);
-			setSelfieUrl(url);
-		}
+	const handleCapture = (url: string) => {
+		setSelfieUrl(url);
+	};
+
+	const handleRetake = () => {
+		setSelfieUrl(null);
 	};
 
 	const handleStartGeneration = () => {
@@ -178,50 +179,42 @@ function CreatePage() {
 						<div className="text-center space-y-2">
 							<h2 className="text-2xl font-bold">First, let's get your look</h2>
 							<p className="text-gray-500">
-								Take a selfie or choose one to star in your video.
+								Take a selfie to star in your video.
 							</p>
 						</div>
 
-						<Card className="p-6 flex flex-col items-center gap-6">
-							<div className="relative group">
-								<Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-									{selfieUrl ? (
+						{selfieUrl ? (
+							<Card className="p-6 flex flex-col items-center gap-6">
+								<div className="relative group">
+									<Avatar className="w-64 h-64 border-4 border-white shadow-lg">
 										<AvatarImage src={selfieUrl} className="object-cover" />
-									) : (
 										<AvatarFallback className="text-4xl bg-gray-100">
 											😊
 										</AvatarFallback>
-									)}
-								</Avatar>
-								<label className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-md">
-									<Camera size={20} />
-									<input
-										type="file"
-										accept="image/*"
-										capture="user"
-										className="hidden"
-										onChange={handleFileChange}
-									/>
-								</label>
-							</div>
+									</Avatar>
+								</div>
 
-							{selfieUrl ? (
-								<Button
-									onClick={() => setStep("template")}
-									className="w-full max-w-xs rounded-full"
-									size="lg"
-								>
-									Looks Good, Continue <ArrowRight className="ml-2 h-4 w-4" />
-								</Button>
-							) : (
-								<Button
-									variant="secondary"
-									className="w-full max-w-xs rounded-full pointer-events-none opacity-50"
-								>
-									Upload a Selfie to Continue
-								</Button>
-							)}
-						</Card>
+								<div className="flex flex-col w-full gap-3 max-w-xs">
+									<Button
+										onClick={() => setStep("template")}
+										className="w-full rounded-full"
+										size="lg"
+									>
+										Looks Good, Continue <ArrowRight className="ml-2 h-4 w-4" />
+									</Button>
+									<Button
+										onClick={handleRetake}
+										variant="outline"
+										className="w-full rounded-full"
+									>
+										<RefreshCw className="mr-2 h-4 w-4" />
+										Retake Selfie
+									</Button>
+								</div>
+							</Card>
+						) : (
+							<CameraCapture onCapture={handleCapture} />
+						)}
 					</div>
 				)}
 
