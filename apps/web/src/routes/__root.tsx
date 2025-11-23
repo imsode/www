@@ -2,8 +2,6 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 
@@ -46,10 +44,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body className="bg-neutral-50">
 				<QueryClientProvider client={queryClient}>
-					<SidebarProvider>
-						<AppSidebar />
-						<SidebarInset>{children}</SidebarInset>
-					</SidebarProvider>
+					{children}
 					<Toaster />
 				</QueryClientProvider>
 				<TanStackDevtools

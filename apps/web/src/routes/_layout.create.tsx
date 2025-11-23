@@ -41,7 +41,7 @@ export const fetchSelfie = createServerFn({ method: "GET" }).handler(
 				// Given the instructions, we want persistence.
 				// We'll implement a basic fetch to the API.
 				`http://localhost:8787/api/selfies/users/${DEMO_USER_ID}/selfies/current.jpg/url`,
-			);
+			)
 			if (response.ok) {
 				const data = (await response.json()) as { url: string };
 				return data.url;
@@ -64,7 +64,7 @@ export const startVideoGeneration = createServerFn({ method: "POST" })
 		console.log("Starting generation with", data);
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 		return { jobId: Math.random().toString(36).substring(7) };
-	});
+	})
 
 export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
 	.inputValidator((data: { jobId: string }) => data)
@@ -78,14 +78,14 @@ export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
 				status: "completed",
 				videoUrl:
 					"https://videos.pexels.com/video-files/6893205/6893205-hd_1080_1920_25fps.mp4",
-			};
+			}
 		if (rand < 0.2) return { status: "failed" };
 		return { status: "processing" };
-	});
+	})
 
 // --- Component ---
 
-export const Route = createFileRoute("/create")({
+export const Route = createFileRoute("/_layout/create")({
 	component: CreatePage,
 });
 
@@ -128,18 +128,18 @@ function CreatePage() {
 	const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
 	const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
 		null,
-	);
+	)
 	const [jobId, setJobId] = useState<string | null>(null);
 	const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(
 		null,
-	);
+	)
 
 	// Fetch existing selfie from server
 	const { data: existingSelfie, isLoading: isLoadingSelfie } = useQuery({
 		queryKey: ["selfie"],
 		queryFn: () => fetchSelfie(),
 		retry: false,
-	});
+	})
 
 	// Sync server selfie state to local state
 	useEffect(() => {
@@ -155,7 +155,7 @@ function CreatePage() {
 			setJobId(data.jobId);
 			setStep("generating");
 		},
-	});
+	})
 
 	// Polling for status
 	const { data: statusData } = useQuery({
@@ -169,7 +169,7 @@ function CreatePage() {
 			}
 			return 2000;
 		},
-	});
+	})
 
 	useEffect(() => {
 		if (statusData?.status === "completed" && statusData.videoUrl) {
@@ -180,24 +180,24 @@ function CreatePage() {
 
 	const handleAddSelf = () => {
 		toast.info("Please upload your selfie using the mobile app.");
-	};
+	}
 
 	const handleRetake = () => {
 		setSelfieUrl(null);
-	};
+	}
 
 	const handleStartGeneration = () => {
 		if (selfieUrl && selectedTemplateId) {
 			startMutation.mutate({
 				data: { selfieUrl, templateId: selectedTemplateId },
-			});
+			})
 		}
-	};
+	}
 
 	return (
-		<div className="flex flex-col min-h-screen bg-neutral-50">
+		<div className="flex flex-col min-h-full bg-neutral-50">
 			<header className="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 shadow-sm sticky top-0 z-10">
-				<SidebarTrigger className="rounded-full border border-gray-200" />
+				<SidebarTrigger className="rounded-full border border-gray-200 hidden md:inline-flex" />
 				<div>
 					<p className="text-lg font-semibold">Create Video</p>
 				</div>
@@ -308,7 +308,7 @@ function CreatePage() {
 								</button>
 							))}
 						</div>
-						<div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 flex justify-center">
+						<div className="fixed bottom-0 sm:bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 z-10 flex justify-center mb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:mb-0">
 							<Button
 								onClick={handleStartGeneration}
 								disabled={!selectedTemplateId || startMutation.isPending}
@@ -371,9 +371,9 @@ function CreatePage() {
 							<Button
 								variant="outline"
 								onClick={() => {
-									setStep("selfie");
-									setGeneratedVideoUrl(null);
-									setJobId(null);
+									setStep("selfie")
+									setGeneratedVideoUrl(null)
+									setJobId(null)
 									setSelectedTemplateId(null);
 								}}
 								className="rounded-full w-full"
@@ -385,5 +385,5 @@ function CreatePage() {
 				)}
 			</div>
 		</div>
-	);
+	)
 }

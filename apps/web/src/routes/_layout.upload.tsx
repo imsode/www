@@ -12,7 +12,7 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/upload")({ component: UploadPage });
+export const Route = createFileRoute("/_layout/upload")({ component: UploadPage });
 
 function UploadPage() {
   return (

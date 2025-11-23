@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/templates")({
+export const Route = createFileRoute("/_layout/templates")({
 	component: TemplatesPage,
 });
 
@@ -12,5 +12,5 @@ function TemplatesPage() {
 				{/* Template grid */}
 			</div>
 		</div>
-	);
+	)
 }

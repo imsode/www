@@ -9,122 +9,153 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadRouteImport } from './routes/upload'
-import { Route as TemplatesRouteImport } from './routes/templates'
-import { Route as MyVideosRouteImport } from './routes/my-videos'
-import { Route as CreateRouteImport } from './routes/create'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
+import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
+import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
+import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
+import { Route as LayoutCreateRouteImport } from './routes/_layout.create'
 
-const UploadRoute = UploadRouteImport.update({
-  id: '/upload',
-  path: '/upload',
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyVideosRoute = MyVideosRouteImport.update({
-  id: '/my-videos',
-  path: '/my-videos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreateRoute = CreateRouteImport.update({
-  id: '/create',
-  path: '/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutUploadRoute = LayoutUploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutTemplatesRoute = LayoutTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutMyVideosRoute = LayoutMyVideosRouteImport.update({
+  id: '/my-videos',
+  path: '/my-videos',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutCreateRoute = LayoutCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/create': typeof CreateRoute
-  '/my-videos': typeof MyVideosRoute
-  '/templates': typeof TemplatesRoute
-  '/upload': typeof UploadRoute
+  '/create': typeof LayoutCreateRoute
+  '/my-videos': typeof LayoutMyVideosRoute
+  '/templates': typeof LayoutTemplatesRoute
+  '/upload': typeof LayoutUploadRoute
+  '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/create': typeof CreateRoute
-  '/my-videos': typeof MyVideosRoute
-  '/templates': typeof TemplatesRoute
-  '/upload': typeof UploadRoute
+  '/create': typeof LayoutCreateRoute
+  '/my-videos': typeof LayoutMyVideosRoute
+  '/templates': typeof LayoutTemplatesRoute
+  '/upload': typeof LayoutUploadRoute
+  '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/create': typeof CreateRoute
-  '/my-videos': typeof MyVideosRoute
-  '/templates': typeof TemplatesRoute
-  '/upload': typeof UploadRoute
+  '/_layout': typeof LayoutRouteWithChildren
+  '/_layout/create': typeof LayoutCreateRoute
+  '/_layout/my-videos': typeof LayoutMyVideosRoute
+  '/_layout/templates': typeof LayoutTemplatesRoute
+  '/_layout/upload': typeof LayoutUploadRoute
+  '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/my-videos' | '/templates' | '/upload'
+  fullPaths: '/create' | '/my-videos' | '/templates' | '/upload' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/my-videos' | '/templates' | '/upload'
-  id: '__root__' | '/' | '/create' | '/my-videos' | '/templates' | '/upload'
+  to: '/create' | '/my-videos' | '/templates' | '/upload' | '/'
+  id:
+    | '__root__'
+    | '/_layout'
+    | '/_layout/create'
+    | '/_layout/my-videos'
+    | '/_layout/templates'
+    | '/_layout/upload'
+    | '/_layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  CreateRoute: typeof CreateRoute
-  MyVideosRoute: typeof MyVideosRoute
-  TemplatesRoute: typeof TemplatesRoute
-  UploadRoute: typeof UploadRoute
+  LayoutRoute: typeof LayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upload': {
-      id: '/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof UploadRouteImport
+    '/_layout': {
+      id: '/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-videos': {
-      id: '/my-videos'
-      path: '/my-videos'
-      fullPath: '/my-videos'
-      preLoaderRoute: typeof MyVideosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/create': {
-      id: '/create'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof CreateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_layout/': {
+      id: '/_layout/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof LayoutIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/upload': {
+      id: '/_layout/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof LayoutUploadRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/templates': {
+      id: '/_layout/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof LayoutTemplatesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/my-videos': {
+      id: '/_layout/my-videos'
+      path: '/my-videos'
+      fullPath: '/my-videos'
+      preLoaderRoute: typeof LayoutMyVideosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/create': {
+      id: '/_layout/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof LayoutCreateRouteImport
+      parentRoute: typeof LayoutRoute
     }
   }
 }
 
+interface LayoutRouteChildren {
+  LayoutCreateRoute: typeof LayoutCreateRoute
+  LayoutMyVideosRoute: typeof LayoutMyVideosRoute
+  LayoutTemplatesRoute: typeof LayoutTemplatesRoute
+  LayoutUploadRoute: typeof LayoutUploadRoute
+  LayoutIndexRoute: typeof LayoutIndexRoute
+}
+
+const LayoutRouteChildren: LayoutRouteChildren = {
+  LayoutCreateRoute: LayoutCreateRoute,
+  LayoutMyVideosRoute: LayoutMyVideosRoute,
+  LayoutTemplatesRoute: LayoutTemplatesRoute,
+  LayoutUploadRoute: LayoutUploadRoute,
+  LayoutIndexRoute: LayoutIndexRoute,
+}
+
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  CreateRoute: CreateRoute,
-  MyVideosRoute: MyVideosRoute,
-  TemplatesRoute: TemplatesRoute,
-  UploadRoute: UploadRoute,
+  LayoutRoute: LayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

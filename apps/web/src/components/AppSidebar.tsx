@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bookmark, Home, LayoutGrid, Upload } from "lucide-react";
+import { Bell, Bookmark, Home, LayoutGrid, Search, Upload } from "lucide-react";
 import type { ElementType } from "react";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Sidebar,
 	SidebarContent,
@@ -16,36 +16,25 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Route as CreateRoute } from "@/routes/create";
-import { Route as IndexRoute } from "@/routes/index";
-import { Route as MyVideosRoute } from "@/routes/my-videos";
-import { Route as TemplatesRoute } from "@/routes/templates";
+import { Route as CreateRoute } from "@/routes/_layout.create";
+import { Route as IndexRoute } from "@/routes/_layout.index";
+import { Route as MyVideosRoute } from "@/routes/_layout.my-videos";
+import { Route as TemplatesRoute } from "@/routes/_layout.templates";
 
 type NavItem = {
 	label: string;
 	icon: ElementType;
-	to:
-		| (typeof IndexRoute)["to"]
-		| (typeof MyVideosRoute)["to"]
-		| (typeof CreateRoute)["to"]
-		| (typeof TemplatesRoute)["to"];
+	to?: string;
+	onClick?: () => void;
 };
 
-const primaryNav: NavItem[] = [
-	{ label: "Home", icon: Home, to: IndexRoute.to },
-];
-
-const personalNav: NavItem[] = [
-	{ label: "My Videos", icon: Bookmark, to: MyVideosRoute.to },
-	{ label: "Create", icon: Upload, to: CreateRoute.to },
-	{ label: "Templates", icon: LayoutGrid, to: TemplatesRoute.to },
-];
-
-type AppSidebarProps = {
-	activeItem?: string;
-};
-
-export function AppSidebar({ activeItem = "Shorts" }: AppSidebarProps) {
+export function AppSidebar({
+	activeItem = "Shorts",
+	onSearchClick,
+	...props
+}: { activeItem?: string; onSearchClick?: () => void } & React.ComponentProps<
+	typeof Sidebar
+>) {
 	const { location } = useRouterState();
 	const pathMap: Record<string, string> = {
 		"/": "Shorts",
@@ -53,8 +42,20 @@ export function AppSidebar({ activeItem = "Shorts" }: AppSidebarProps) {
 	};
 	const resolvedActive = pathMap[location.pathname] ?? activeItem;
 
+	const primaryNav: NavItem[] = [
+		{ label: "Home", icon: Home, to: IndexRoute.to },
+		{ label: "Search", icon: Search, onClick: onSearchClick },
+		{ label: "Notifications", icon: Bell, onClick: () => {} },
+	];
+
+	const personalNav: NavItem[] = [
+		{ label: "My Videos", icon: Bookmark, to: MyVideosRoute.to },
+		{ label: "Create", icon: Upload, to: CreateRoute.to },
+		{ label: "Templates", icon: LayoutGrid, to: TemplatesRoute.to },
+	];
+
 	return (
-		<Sidebar collapsible="icon" className="border-r border-gray-200">
+		<Sidebar collapsible="icon" className="border-r border-gray-200" {...props}>
 			<SidebarHeader className="flex items-center gap-3 px-4 py-4">
 				<SidebarMenu>
 					<SidebarMenuItem>
@@ -83,16 +84,30 @@ export function AppSidebar({ activeItem = "Shorts" }: AppSidebarProps) {
 						<SidebarMenu>
 							{primaryNav.map((item) => (
 								<SidebarMenuItem key={item.label}>
-									<SidebarMenuButton
-										isActive={item.label === resolvedActive}
-										tooltip={item.label}
-										asChild
-									>
-										<Link to={item.to}>
+									{item.to ? (
+										<SidebarMenuButton
+											isActive={item.label === resolvedActive}
+											tooltip={item.label}
+											onClick={item.onClick}
+											asChild
+										>
+											<Link to={item.to}>
+												<item.icon className="h-4 w-4" />
+												<span>{item.label}</span>
+											</Link>
+										</SidebarMenuButton>
+									) : (
+										<SidebarMenuButton
+											isActive={item.label === resolvedActive}
+											tooltip={item.label}
+											onClick={item.onClick}
+											// asChild={!!item.to}
+										>
+											{/* <div> */}
 											<item.icon className="h-4 w-4" />
 											<span>{item.label}</span>
-										</Link>
-									</SidebarMenuButton>
+										</SidebarMenuButton>
+									)}
 								</SidebarMenuItem>
 							))}
 						</SidebarMenu>
@@ -112,7 +127,10 @@ export function AppSidebar({ activeItem = "Shorts" }: AppSidebarProps) {
 										isActive={item.label === resolvedActive}
 										asChild
 									>
-										<Link to={item.to}>
+										<Link
+											to={item.to ?? ""}
+											className="flex items-center gap-2 w-full"
+										>
 											<item.icon className="h-4 w-4" />
 											<span>{item.label}</span>
 										</Link>
@@ -123,8 +141,27 @@ export function AppSidebar({ activeItem = "Shorts" }: AppSidebarProps) {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter className="py-4 text-xs text-muted-foreground">
-				Made for quick story-sized content.
+			<SidebarFooter>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							size="lg"
+							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+						>
+							<Avatar className="h-8 w-8 rounded-lg">
+								<AvatarImage
+									src="https://api.dicebear.com/7.x/avataaars/svg?seed=Viewer"
+									alt="Viewer"
+								/>
+								<AvatarFallback className="rounded-lg">U</AvatarFallback>
+							</Avatar>
+							<div className="grid flex-1 text-left text-sm leading-tight">
+								<span className="truncate font-semibold">Viewer</span>
+								<span className="truncate text-xs">viewer@example.com</span>
+							</div>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
