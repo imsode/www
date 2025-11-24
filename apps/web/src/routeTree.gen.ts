@@ -18,7 +18,6 @@ import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/r
 import { Route as LayoutCreateTemplateRouteRouteImport } from './routes/_layout.create/template/route'
 import { Route as LayoutCreateGeneratingRouteRouteImport } from './routes/_layout.create/generating/route'
 import { Route as LayoutCreateCompletedRouteRouteImport } from './routes/_layout.create/completed/route'
-import { Route as LayoutCreateCharactersRouteRouteImport } from './routes/_layout.create/characters/route'
 import { Route as LayoutCreateCastingRouteRouteImport } from './routes/_layout.create/casting/route'
 
 const LayoutRoute = LayoutRouteImport.update({
@@ -68,12 +67,6 @@ const LayoutCreateCompletedRouteRoute =
     path: '/completed',
     getParentRoute: () => LayoutCreateRouteRoute,
   } as any)
-const LayoutCreateCharactersRouteRoute =
-  LayoutCreateCharactersRouteRouteImport.update({
-    id: '/characters',
-    path: '/characters',
-    getParentRoute: () => LayoutCreateRouteRoute,
-  } as any)
 const LayoutCreateCastingRouteRoute =
   LayoutCreateCastingRouteRouteImport.update({
     id: '/casting',
@@ -88,7 +81,6 @@ export interface FileRoutesByFullPath {
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
   '/create/casting': typeof LayoutCreateCastingRouteRoute
-  '/create/characters': typeof LayoutCreateCharactersRouteRoute
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
@@ -100,7 +92,6 @@ export interface FileRoutesByTo {
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
   '/create/casting': typeof LayoutCreateCastingRouteRoute
-  '/create/characters': typeof LayoutCreateCharactersRouteRoute
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
@@ -114,7 +105,6 @@ export interface FileRoutesById {
   '/_layout/upload': typeof LayoutUploadRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/create/casting': typeof LayoutCreateCastingRouteRoute
-  '/_layout/create/characters': typeof LayoutCreateCharactersRouteRoute
   '/_layout/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/_layout/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/_layout/create/template': typeof LayoutCreateTemplateRouteRoute
@@ -128,7 +118,6 @@ export interface FileRouteTypes {
     | '/upload'
     | '/'
     | '/create/casting'
-    | '/create/characters'
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
@@ -140,7 +129,6 @@ export interface FileRouteTypes {
     | '/upload'
     | '/'
     | '/create/casting'
-    | '/create/characters'
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
@@ -153,7 +141,6 @@ export interface FileRouteTypes {
     | '/_layout/upload'
     | '/_layout/'
     | '/_layout/create/casting'
-    | '/_layout/create/characters'
     | '/_layout/create/completed'
     | '/_layout/create/generating'
     | '/_layout/create/template'
@@ -228,13 +215,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCreateCompletedRouteRouteImport
       parentRoute: typeof LayoutCreateRouteRoute
     }
-    '/_layout/create/characters': {
-      id: '/_layout/create/characters'
-      path: '/characters'
-      fullPath: '/create/characters'
-      preLoaderRoute: typeof LayoutCreateCharactersRouteRouteImport
-      parentRoute: typeof LayoutCreateRouteRoute
-    }
     '/_layout/create/casting': {
       id: '/_layout/create/casting'
       path: '/casting'
@@ -247,7 +227,6 @@ declare module '@tanstack/react-router' {
 
 interface LayoutCreateRouteRouteChildren {
   LayoutCreateCastingRouteRoute: typeof LayoutCreateCastingRouteRoute
-  LayoutCreateCharactersRouteRoute: typeof LayoutCreateCharactersRouteRoute
   LayoutCreateCompletedRouteRoute: typeof LayoutCreateCompletedRouteRoute
   LayoutCreateGeneratingRouteRoute: typeof LayoutCreateGeneratingRouteRoute
   LayoutCreateTemplateRouteRoute: typeof LayoutCreateTemplateRouteRoute
@@ -255,7 +234,6 @@ interface LayoutCreateRouteRouteChildren {
 
 const LayoutCreateRouteRouteChildren: LayoutCreateRouteRouteChildren = {
   LayoutCreateCastingRouteRoute: LayoutCreateCastingRouteRoute,
-  LayoutCreateCharactersRouteRoute: LayoutCreateCharactersRouteRoute,
   LayoutCreateCompletedRouteRoute: LayoutCreateCompletedRouteRoute,
   LayoutCreateGeneratingRouteRoute: LayoutCreateGeneratingRouteRoute,
   LayoutCreateTemplateRouteRoute: LayoutCreateTemplateRouteRoute,

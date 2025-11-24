@@ -1,17 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
 import { CastingStep } from "../-components/CastingStep";
-import { DEMO_USER_ID, MOCK_CHARACTERS, TEMPLATES } from "../-constants";
-
-// Reuse the server function from the parent/previous implementation
-// Ideally this should be in a shared api file, but keeping it here for now as per existing pattern
-// We will redefine it here or import if we extracted it.
-// Let's extract the server functions to a separate file to avoid duplication errors if we keep the old route file around
-// But since we replaced route.tsx, we need to re-declare or import.
-// I'll re-declare for simplicity in this refactor step, but ideally utils.
+import { MOCK_CHARACTERS, TEMPLATES } from "../-constants";
 
 type StartGenerationInput = {
 	assignments: Record<string, string>;
@@ -27,7 +20,6 @@ export const startVideoGeneration = createServerFn({ method: "POST" })
 	});
 
 const castingSearchSchema = z.object({
-	characterIds: z.array(z.string()).optional(),
 	templateId: z.string(),
 });
 
@@ -42,10 +34,6 @@ function CastingPage() {
 	const [assignments, setAssignments] = useState<Record<string, string>>({});
 
 	const template = TEMPLATES.find((t) => t.id === search.templateId);
-	// Filter characters based on IDs passed in URL
-	const selectedCharacters = MOCK_CHARACTERS.filter((c) =>
-		search.characterIds?.includes(c.id),
-	);
 
 	const startMutation = useMutation({
 		mutationFn: startVideoGeneration,
@@ -70,9 +58,6 @@ function CastingPage() {
 	const handleBack = () => {
 		navigate({
 			to: "/create/template",
-			search: {
-				characterIds: search.characterIds,
-			},
 		});
 	};
 
@@ -81,8 +66,7 @@ function CastingPage() {
 	return (
 		<CastingStep
 			template={template}
-			characters={selectedCharacters} // Pass fully populated characters
-			selectedCharacterIds={search.characterIds || []}
+			characters={MOCK_CHARACTERS}
 			assignments={assignments}
 			onAssign={(role, charId) =>
 				setAssignments((prev) => ({ ...prev, [role]: charId }))

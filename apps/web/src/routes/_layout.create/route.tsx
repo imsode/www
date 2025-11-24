@@ -5,7 +5,7 @@ export const Route = createFileRoute("/_layout/create")({
 	beforeLoad: ({ location }) => {
 		if (location.pathname === "/create" || location.pathname === "/create/") {
 			throw redirect({
-				to: "/create/characters",
+				to: "/create/template",
 			});
 		}
 	},

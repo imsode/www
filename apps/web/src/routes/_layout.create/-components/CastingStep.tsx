@@ -1,13 +1,27 @@
-import { ChevronLeft, Loader2, Play, X } from "lucide-react";
+import { ChevronLeft, Loader2, Play, Plus, User, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerHeader,
+	DrawerTitle,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { Character, Template } from "../-types";
 
 interface CastingStepProps {
 	template: Template;
 	characters: Character[];
-	selectedCharacterIds: string[];
 	assignments: Record<string, string>;
 	onAssign: (role: string, charId: string) => void;
 	onGenerate: () => void;
@@ -16,10 +30,48 @@ interface CastingStepProps {
 	isGenerating: boolean;
 }
 
+function CharacterGrid({
+	characters,
+	onSelect,
+}: {
+	characters: Character[];
+	onSelect: (charId: string) => void;
+}) {
+	return (
+		<div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+			{characters.map((char) => (
+				<button
+					key={char.id}
+					type="button"
+					onClick={() => onSelect(char.id)}
+					className="flex flex-col items-center gap-2 group"
+				>
+					<Avatar className="w-20 h-20 border-2 border-transparent group-hover:border-white/50 transition-all">
+						<AvatarImage src={char.imageUrl} />
+						<AvatarFallback>{char.name[0]}</AvatarFallback>
+					</Avatar>
+					<span className="text-sm text-zinc-400 group-hover:text-white">
+						{char.name}
+					</span>
+				</button>
+			))}
+			<button
+				type="button"
+				onClick={() => toast.info("Upload coming soon!")}
+				className="flex flex-col items-center gap-2 group"
+			>
+				<div className="w-20 h-20 rounded-full border-2 border-dashed border-zinc-800 flex items-center justify-center bg-zinc-900 group-hover:bg-zinc-800 transition-colors">
+					<Plus className="w-8 h-8 text-zinc-500" />
+				</div>
+				<span className="text-sm text-zinc-500">Upload</span>
+			</button>
+		</div>
+	);
+}
+
 export function CastingStep({
 	template,
 	characters,
-	selectedCharacterIds,
 	assignments,
 	onAssign,
 	onGenerate,
@@ -27,16 +79,63 @@ export function CastingStep({
 	onCancel,
 	isGenerating,
 }: CastingStepProps) {
-	const selectedChars = characters.filter((c) =>
-		selectedCharacterIds.includes(c.id),
-	);
+	const [activeRole, setActiveRole] = useState<string | null>(null);
 	const isComplete = template.roles.every((role) => assignments[role]);
+	const isMobile = useIsMobile();
+
+	const handleCharacterSelect = (charId: string) => {
+		if (activeRole) {
+			onAssign(activeRole, charId);
+			setActiveRole(null);
+		}
+	};
 
 	return (
 		<div className="h-screen flex flex-col bg-black overflow-hidden relative">
+			{/* Character Picker */}
+			{isMobile ? (
+				<Drawer
+					open={!!activeRole}
+					onOpenChange={(open) => !open && setActiveRole(null)}
+				>
+					<DrawerContent className="bg-zinc-950 border-zinc-800">
+						<DrawerHeader>
+							<DrawerTitle className="text-white text-center">
+								Select {activeRole}
+							</DrawerTitle>
+						</DrawerHeader>
+						<div className="p-4 max-h-[70vh] overflow-y-auto">
+							<CharacterGrid
+								characters={characters}
+								onSelect={handleCharacterSelect}
+							/>
+						</div>
+					</DrawerContent>
+				</Drawer>
+			) : (
+				<Dialog
+					open={!!activeRole}
+					onOpenChange={(open) => !open && setActiveRole(null)}
+				>
+					<DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-3xl">
+						<DialogHeader>
+							<DialogTitle className="text-white text-center">
+								Select {activeRole}
+							</DialogTitle>
+						</DialogHeader>
+						<div className="p-4 max-h-[70vh] overflow-y-auto">
+							<CharacterGrid
+								characters={characters}
+								onSelect={handleCharacterSelect}
+							/>
+						</div>
+					</DialogContent>
+				</Dialog>
+			)}
+
 			{/* Desktop View: Sora-style Absolute Layout */}
 			<div className="hidden lg:flex w-full h-full relative bg-black">
-				{/* 1. The Stage (Left) - Flex-1 but padded to respect absolute sidebar */}
+				{/* 1. The Stage (Left) */}
 				<div className="flex-1 h-full flex items-center justify-center pr-[420px] relative">
 					<div className="relative h-full p-4 aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950">
 						<video
@@ -59,7 +158,7 @@ export function CastingStep({
 					</div>
 				</div>
 
-				{/* 2. The Inspector (Right) - Absolute Positioned */}
+				{/* 2. The Inspector (Right) */}
 				<div className="absolute right-0 top-0 h-full w-[400px] bg-zinc-900 border-l border-white/10 flex flex-col shadow-2xl z-20">
 					<div className="flex-1 overflow-y-auto">
 						<div className="p-6 space-y-6 w-full">
@@ -68,51 +167,68 @@ export function CastingStep({
 									Cast Your Roles
 								</h2>
 								<p className="text-zinc-400 text-sm mt-1">
-									Assign characters to roles in "{template.name}"
+									Tap a role to assign a character
 								</p>
 							</div>
 
-							<div className="space-y-6">
-								{template.roles.map((role) => (
-									<div key={role} className="space-y-3">
-										<span className="text-sm font-semibold text-zinc-300 block uppercase tracking-wide">
-											{role}
-										</span>
-										<div className="grid grid-cols-3 gap-3">
-											{selectedChars.map((char) => (
-												<button
-													key={char.id}
-													type="button"
-													onClick={() => onAssign(role, char.id)}
-													className={cn(
-														"flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 relative overflow-hidden group bg-zinc-950",
-														assignments[role] === char.id
-															? "border-white ring-1 ring-white/20 shadow-lg"
-															: "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900",
-													)}
-												>
-													<Avatar className="w-12 h-12 mb-2 shadow-sm group-hover:scale-105 transition-transform ring-2 ring-transparent group-hover:ring-white/10">
-														<AvatarImage src={char.imageUrl} />
-														<AvatarFallback>{char.name[0]}</AvatarFallback>
-													</Avatar>
-													<span
-														className={cn(
-															"text-xs font-medium truncate w-full text-center",
-															assignments[role] === char.id
-																? "text-white"
-																: "text-zinc-400",
-														)}
-													>
-														{char.name}
-													</span>
-													{assignments[role] === char.id && (
-														<div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white" />
-													)}
-												</button>
-											))}
+							<div className="space-y-4">
+								{template.roles.map((role) => {
+									const assignedId = assignments[role];
+									const assignedChar = characters.find(
+										(c) => c.id === assignedId,
+									);
+
+									return (
+										<div key={role} className="space-y-2">
+											<span className="text-sm font-semibold text-zinc-300 block uppercase tracking-wide">
+												{role}
+											</span>
+											<button
+												type="button"
+												onClick={() => setActiveRole(role)}
+												className={cn(
+													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-950 group hover:bg-zinc-900",
+													assignedChar
+														? "border-white/20 hover:border-white/40"
+														: "border-zinc-800 hover:border-zinc-700 border-dashed",
+												)}
+											>
+												{assignedChar ? (
+													<>
+														<Avatar className="w-12 h-12 border border-white/10">
+															<AvatarImage src={assignedChar.imageUrl} />
+															<AvatarFallback>
+																{assignedChar.name[0]}
+															</AvatarFallback>
+														</Avatar>
+														<div className="flex-1 text-left">
+															<div className="font-medium text-white">
+																{assignedChar.name}
+															</div>
+															<div className="text-xs text-zinc-400">
+																Tap to change
+															</div>
+														</div>
+													</>
+												) : (
+													<>
+														<div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-zinc-600">
+															<User className="w-5 h-5 text-zinc-500" />
+														</div>
+														<div className="flex-1 text-left">
+															<div className="font-medium text-zinc-400">
+																Select Actor
+															</div>
+															<div className="text-xs text-zinc-500">
+																Tap to assign
+															</div>
+														</div>
+													</>
+												)}
+											</button>
 										</div>
-									</div>
-								))}
+									);
+								})}
 							</div>
 						</div>
 					</div>
@@ -202,40 +318,64 @@ export function CastingStep({
 								</p>
 							</div>
 
-							<div className="space-y-6">
-								{template.roles.map((role) => (
-									<div key={role} className="space-y-3">
-										<span className="text-sm font-semibold text-gray-900 block uppercase tracking-wide">
-											{role}
-										</span>
-										<div className="grid grid-cols-3 gap-3">
-											{selectedChars.map((char) => (
-												<button
-													key={char.id}
-													type="button"
-													onClick={() => onAssign(role, char.id)}
-													className={cn(
-														"flex flex-col items-center p-3 rounded-xl border-2 transition-all duration-200 relative overflow-hidden group",
-														assignments[role] === char.id
-															? "border-black bg-gray-50 ring-1 ring-black/5 shadow-md"
-															: "border-gray-100 hover:border-gray-300 hover:bg-gray-50",
-													)}
-												>
-													<Avatar className="w-12 h-12 mb-2 shadow-sm group-hover:scale-105 transition-transform">
-														<AvatarImage src={char.imageUrl} />
-														<AvatarFallback>{char.name[0]}</AvatarFallback>
-													</Avatar>
-													<span className="text-xs font-medium truncate w-full text-center text-gray-700">
-														{char.name}
-													</span>
-													{assignments[role] === char.id && (
-														<div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white" />
-													)}
-												</button>
-											))}
+							<div className="space-y-4">
+								{template.roles.map((role) => {
+									const assignedId = assignments[role];
+									const assignedChar = characters.find(
+										(c) => c.id === assignedId,
+									);
+
+									return (
+										<div key={role} className="space-y-2">
+											<span className="text-sm font-semibold text-gray-900 block uppercase tracking-wide">
+												{role}
+											</span>
+											<button
+												type="button"
+												onClick={() => setActiveRole(role)}
+												className={cn(
+													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-gray-50 group hover:bg-gray-100",
+													assignedChar
+														? "border-black/10"
+														: "border-gray-200 border-dashed",
+												)}
+											>
+												{assignedChar ? (
+													<>
+														<Avatar className="w-12 h-12 border border-gray-200">
+															<AvatarImage src={assignedChar.imageUrl} />
+															<AvatarFallback>
+																{assignedChar.name[0]}
+															</AvatarFallback>
+														</Avatar>
+														<div className="flex-1 text-left">
+															<div className="font-medium text-gray-900">
+																{assignedChar.name}
+															</div>
+															<div className="text-xs text-gray-500">
+																Tap to change
+															</div>
+														</div>
+													</>
+												) : (
+													<>
+														<div className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-gray-300">
+															<User className="w-5 h-5 text-gray-400" />
+														</div>
+														<div className="flex-1 text-left">
+															<div className="font-medium text-gray-500">
+																Select Actor
+															</div>
+															<div className="text-xs text-gray-400">
+																Tap to assign
+															</div>
+														</div>
+													</>
+												)}
+											</button>
 										</div>
-									</div>
-								))}
+									);
+								})}
 							</div>
 						</div>
 					</div>

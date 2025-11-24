@@ -4,9 +4,7 @@ import { z } from "zod";
 import { TemplateSelectionStep } from "../-components/TemplateSelectionStep";
 import { TEMPLATES } from "../-constants";
 
-const templateSearchSchema = z.object({
-	characterIds: z.array(z.string()).optional(),
-});
+const templateSearchSchema = z.object({});
 
 export const Route = createFileRoute("/_layout/create/template")({
 	validateSearch: (search) => templateSearchSchema.parse(search),
@@ -15,7 +13,6 @@ export const Route = createFileRoute("/_layout/create/template")({
 
 function TemplatePage() {
 	const navigate = useNavigate();
-	const search = Route.useSearch();
 	const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
 		null,
 	);
@@ -29,19 +26,14 @@ function TemplatePage() {
 		navigate({
 			to: "/create/casting",
 			search: {
-				characterIds: search.characterIds,
 				templateId: idToUse,
 			},
 		});
 	};
 
 	const handleBack = () => {
-		// Preserve character selection when going back
 		navigate({
-			to: "/create/characters",
-			search: {
-				characterIds: search.characterIds,
-			},
+			to: "/",
 		});
 	};
 
