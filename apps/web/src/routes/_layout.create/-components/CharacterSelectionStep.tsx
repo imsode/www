@@ -91,7 +91,7 @@ export function CharacterSelectionStep({
 			</div>
 
 			<StepFooter>
-				<div className="flex items-center gap-4 w-full justify-between sm:justify-end">
+				<div className="flex items-center gap-4 w-full justify-between sm:justify-center">
 					<div className="flex items-center gap-2 sm:hidden">
 						<div className="flex -space-x-2">
 							{selectedIds.map((id) => {

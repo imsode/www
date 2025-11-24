@@ -22,7 +22,7 @@ function Layout() {
 					style={
 						{
 							"--sidebar-width": "20rem",
-							"--sidebar-width-mobile": "20rem",
+							"--sidebar-width-mobile": "0",
 						} as React.CSSProperties
 					}
 				>
