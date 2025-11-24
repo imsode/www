@@ -27,7 +27,7 @@ export function StepContainer({
 	return (
 		<div
 			className={cn(
-				"container max-w-4xl mx-auto p-4 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500",
+				"container max-w-4xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500",
 				className,
 			)}
 		>

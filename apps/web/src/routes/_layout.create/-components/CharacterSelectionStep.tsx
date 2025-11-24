@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Plus } from "lucide-react";
+import { ArrowRight, CheckCircle2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ interface CharacterSelectionStepProps {
 	selectedIds: string[];
 	onSelect: (ids: string[]) => void;
 	onNext: () => void;
+	onBack?: () => void;
 }
 
 export function CharacterSelectionStep({
@@ -18,6 +19,7 @@ export function CharacterSelectionStep({
 	selectedIds,
 	onSelect,
 	onNext,
+	onBack,
 }: CharacterSelectionStepProps) {
 	const toggleSelection = (id: string) => {
 		if (selectedIds.includes(id)) {
@@ -32,7 +34,18 @@ export function CharacterSelectionStep({
 	};
 
 	return (
-		<StepContainer>
+		<StepContainer className="p-4 relative">
+			{onBack && (
+				<button
+					type="button"
+					onClick={onBack}
+					className="absolute top-0 right-4 p-2 text-gray-400 hover:text-black sm:hidden"
+					aria-label="Cancel"
+				>
+					<X className="w-6 h-6" />
+				</button>
+			)}
+
 			<StepHeader
 				title="Select Characters"
 				description="Pick up to 3 stars for your video"
@@ -108,6 +121,16 @@ export function CharacterSelectionStep({
 							})}
 						</div>
 					</div>
+					{onBack && (
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={onBack}
+							className="hidden sm:flex text-gray-500 hover:text-black"
+						>
+							Cancel
+						</Button>
+					)}
 					<Button
 						type="button"
 						onClick={onNext}

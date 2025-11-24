@@ -67,6 +67,15 @@ function CastingPage() {
 		}
 	};
 
+	const handleBack = () => {
+		navigate({
+			to: "/create/template",
+			search: {
+				characterIds: search.characterIds,
+			},
+		});
+	};
+
 	if (!template) return <div>Template not found</div>;
 
 	return (
@@ -79,6 +88,8 @@ function CastingPage() {
 				setAssignments((prev) => ({ ...prev, [role]: charId }))
 			}
 			onGenerate={handleGenerate}
+			onBack={handleBack}
+			onCancel={() => navigate({ to: "/" })}
 			isGenerating={startMutation.isPending}
 		/>
 	);

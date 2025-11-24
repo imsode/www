@@ -52,6 +52,7 @@ function TemplatePage() {
 			onSelect={setSelectedTemplateId}
 			onNext={handleNext}
 			onBack={handleBack}
+			onCancel={() => navigate({ to: "/" })}
 		/>
 	);
 }

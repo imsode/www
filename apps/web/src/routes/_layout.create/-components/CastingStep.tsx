@@ -1,4 +1,4 @@
-import { Loader2, Play } from "lucide-react";
+import { ChevronLeft, Loader2, Play, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ interface CastingStepProps {
 	assignments: Record<string, string>;
 	onAssign: (role: string, charId: string) => void;
 	onGenerate: () => void;
+	onBack?: () => void;
+	onCancel?: () => void;
 	isGenerating: boolean;
 }
 
@@ -22,6 +24,8 @@ export function CastingStep({
 	assignments,
 	onAssign,
 	onGenerate,
+	onBack,
+	onCancel,
 	isGenerating,
 }: CastingStepProps) {
 	const selectedChars = characters.filter((c) =>
@@ -30,9 +34,29 @@ export function CastingStep({
 	const isComplete = template.roles.every((role) => assignments[role]);
 
 	return (
-		<StepContainer className="flex flex-col h-full">
+		<StepContainer className="flex flex-col h-full sm:p-4">
 			{/* Top: Preview */}
-			<div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-xl mb-6 shrink-0 max-h-[40vh] w-full sm:w-auto sm:mx-auto">
+			<div className="relative aspect-[9/16] overflow-hidden shadow-xl mb-6 shrink-0 max-h-[40vh] w-full sm:w-auto sm:mx-auto rounded-none sm:rounded-2xl">
+				{onBack && (
+					<button
+						type="button"
+						onClick={onBack}
+						className="absolute top-4 left-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all sm:hidden"
+						aria-label="Go back"
+					>
+						<ChevronLeft className="w-6 h-6" />
+					</button>
+				)}
+				{onCancel && (
+					<button
+						type="button"
+						onClick={onCancel}
+						className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all sm:hidden"
+						aria-label="Cancel"
+					>
+						<X className="w-6 h-6" />
+					</button>
+				)}
 				<video
 					src={template.videoUrl}
 					poster={template.image}
@@ -53,7 +77,7 @@ export function CastingStep({
 			</div>
 
 			{/* Bottom: Roles */}
-			<div className="space-y-4 flex-1 overflow-y-auto sm:max-w-lg sm:mx-auto w-full">
+			<div className="space-y-4 flex-1 overflow-y-auto sm:max-w-lg sm:mx-auto w-full px-4">
 				{template.roles.map((role) => (
 					<div key={role} className="space-y-2">
 						<span className="text-sm font-medium text-gray-700 block">
@@ -87,20 +111,32 @@ export function CastingStep({
 			</div>
 
 			<StepFooter>
-				<Button
-					type="button"
-					onClick={onGenerate}
-					disabled={!isComplete || isGenerating}
-					className="w-full max-w-md rounded-full shadow-lg"
-					size="lg"
-				>
-					{isGenerating ? (
-						<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-					) : (
-						<Play className="mr-2 h-4 w-4 fill-current" />
+				<div className="flex items-center gap-4 w-full justify-center sm:justify-end">
+					{onBack && (
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={onBack}
+							className="hidden sm:flex text-gray-500 hover:text-black"
+						>
+							Back
+						</Button>
 					)}
-					Generate Video
-				</Button>
+					<Button
+						type="button"
+						onClick={onGenerate}
+						disabled={!isComplete || isGenerating}
+						className="w-full max-w-md sm:w-auto rounded-full shadow-lg px-8"
+						size="lg"
+					>
+						{isGenerating ? (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						) : (
+							<Play className="mr-2 h-4 w-4 fill-current" />
+						)}
+						Generate Video
+					</Button>
+				</div>
 			</StepFooter>
 		</StepContainer>
 	);

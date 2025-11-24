@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ChevronLeft, Play } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, Play, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ interface TemplateSelectionStepProps {
 	onSelect: (id: string) => void;
 	onNext: (templateId?: string) => void;
 	onBack?: () => void;
+	onCancel?: () => void;
 }
 
 interface MobileTemplateCarouselProps {
@@ -23,6 +24,7 @@ interface MobileTemplateCarouselProps {
 	onSelect: (id: string) => void;
 	onNext: (templateId?: string) => void;
 	onBack?: () => void;
+	onCancel?: () => void;
 }
 
 interface TemplateGridProps {
@@ -49,6 +51,7 @@ const MobileTemplateCarousel = ({
 	onSelect,
 	onNext,
 	onBack,
+	onCancel,
 }: MobileTemplateCarouselProps) => (
 	<div className="block sm:hidden flex-1 relative">
 		{onBack && (
@@ -59,6 +62,16 @@ const MobileTemplateCarousel = ({
 				aria-label="Go back"
 			>
 				<ChevronLeft className="w-6 h-6" />
+			</button>
+		)}
+		{onCancel && (
+			<button
+				type="button"
+				onClick={onCancel}
+				className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
+				aria-label="Cancel"
+			>
+				<X className="w-6 h-6" />
 			</button>
 		)}
 		<Carousel
@@ -230,6 +243,7 @@ export function TemplateSelectionStep({
 	onSelect,
 	onNext,
 	onBack,
+	onCancel,
 }: TemplateSelectionStepProps) {
 	return (
 		<div className="min-h-[calc(100vh-4rem)] flex flex-col bg-white">
@@ -238,6 +252,7 @@ export function TemplateSelectionStep({
 				onSelect={onSelect}
 				onNext={onNext}
 				onBack={onBack}
+				onCancel={onCancel}
 			/>
 
 			<div className="hidden sm:block container mx-auto p-4">
@@ -248,14 +263,26 @@ export function TemplateSelectionStep({
 				/>
 
 				<StepFooter>
-					<Button
-						type="button"
-						onClick={() => onNext()}
-						disabled={!selectedTemplateId}
-						className="rounded-full px-8 w-full sm:w-auto"
-					>
-						Continue <ArrowRight className="ml-2 h-4 w-4" />
-					</Button>
+					<div className="flex items-center gap-4">
+						{onBack && (
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={onBack}
+								className="rounded-full px-6"
+							>
+								Back
+							</Button>
+						)}
+						<Button
+							type="button"
+							onClick={() => onNext()}
+							disabled={!selectedTemplateId}
+							className="rounded-full px-8 w-full sm:w-auto"
+						>
+							Continue <ArrowRight className="ml-2 h-4 w-4" />
+						</Button>
+					</div>
 				</StepFooter>
 			</div>
 		</div>

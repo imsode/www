@@ -1,15 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import { CharacterSelectionStep } from "../-components/CharacterSelectionStep";
 import { MOCK_CHARACTERS } from "../-constants";
 
+const charactersSearchSchema = z.object({
+	characterIds: z.array(z.string()).optional(),
+});
+
 export const Route = createFileRoute("/_layout/create/characters")({
+	validateSearch: (search) => charactersSearchSchema.parse(search),
 	component: CharactersPage,
 });
 
 function CharactersPage() {
 	const navigate = useNavigate();
-	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const search = Route.useSearch();
+	const [selectedIds, setSelectedIds] = useState<string[]>(
+		search.characterIds || [],
+	);
 
 	// In a real app, we'd fetch these or pull from a shared context
 	const characters = MOCK_CHARACTERS;
@@ -31,6 +40,7 @@ function CharactersPage() {
 			selectedIds={selectedIds}
 			onSelect={setSelectedIds}
 			onNext={handleNext}
+			onBack={() => navigate({ to: "/" })}
 		/>
 	);
 }
