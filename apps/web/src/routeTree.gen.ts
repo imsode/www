@@ -15,6 +15,11 @@ import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
 import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
 import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
 import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/route'
+import { Route as LayoutCreateTemplateRouteRouteImport } from './routes/_layout.create/template/route'
+import { Route as LayoutCreateGeneratingRouteRouteImport } from './routes/_layout.create/generating/route'
+import { Route as LayoutCreateCompletedRouteRouteImport } from './routes/_layout.create/completed/route'
+import { Route as LayoutCreateCharactersRouteRouteImport } from './routes/_layout.create/characters/route'
+import { Route as LayoutCreateCastingRouteRouteImport } from './routes/_layout.create/casting/route'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -45,35 +50,100 @@ const LayoutCreateRouteRoute = LayoutCreateRouteRouteImport.update({
   path: '/create',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutCreateTemplateRouteRoute =
+  LayoutCreateTemplateRouteRouteImport.update({
+    id: '/template',
+    path: '/template',
+    getParentRoute: () => LayoutCreateRouteRoute,
+  } as any)
+const LayoutCreateGeneratingRouteRoute =
+  LayoutCreateGeneratingRouteRouteImport.update({
+    id: '/generating',
+    path: '/generating',
+    getParentRoute: () => LayoutCreateRouteRoute,
+  } as any)
+const LayoutCreateCompletedRouteRoute =
+  LayoutCreateCompletedRouteRouteImport.update({
+    id: '/completed',
+    path: '/completed',
+    getParentRoute: () => LayoutCreateRouteRoute,
+  } as any)
+const LayoutCreateCharactersRouteRoute =
+  LayoutCreateCharactersRouteRouteImport.update({
+    id: '/characters',
+    path: '/characters',
+    getParentRoute: () => LayoutCreateRouteRoute,
+  } as any)
+const LayoutCreateCastingRouteRoute =
+  LayoutCreateCastingRouteRouteImport.update({
+    id: '/casting',
+    path: '/casting',
+    getParentRoute: () => LayoutCreateRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/create': typeof LayoutCreateRouteRoute
+  '/create': typeof LayoutCreateRouteRouteWithChildren
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
+  '/create/casting': typeof LayoutCreateCastingRouteRoute
+  '/create/characters': typeof LayoutCreateCharactersRouteRoute
+  '/create/completed': typeof LayoutCreateCompletedRouteRoute
+  '/create/generating': typeof LayoutCreateGeneratingRouteRoute
+  '/create/template': typeof LayoutCreateTemplateRouteRoute
 }
 export interface FileRoutesByTo {
-  '/create': typeof LayoutCreateRouteRoute
+  '/create': typeof LayoutCreateRouteRouteWithChildren
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
+  '/create/casting': typeof LayoutCreateCastingRouteRoute
+  '/create/characters': typeof LayoutCreateCharactersRouteRoute
+  '/create/completed': typeof LayoutCreateCompletedRouteRoute
+  '/create/generating': typeof LayoutCreateGeneratingRouteRoute
+  '/create/template': typeof LayoutCreateTemplateRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
-  '/_layout/create': typeof LayoutCreateRouteRoute
+  '/_layout/create': typeof LayoutCreateRouteRouteWithChildren
   '/_layout/my-videos': typeof LayoutMyVideosRoute
   '/_layout/templates': typeof LayoutTemplatesRoute
   '/_layout/upload': typeof LayoutUploadRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/create/casting': typeof LayoutCreateCastingRouteRoute
+  '/_layout/create/characters': typeof LayoutCreateCharactersRouteRoute
+  '/_layout/create/completed': typeof LayoutCreateCompletedRouteRoute
+  '/_layout/create/generating': typeof LayoutCreateGeneratingRouteRoute
+  '/_layout/create/template': typeof LayoutCreateTemplateRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/create' | '/my-videos' | '/templates' | '/upload' | '/'
+  fullPaths:
+    | '/create'
+    | '/my-videos'
+    | '/templates'
+    | '/upload'
+    | '/'
+    | '/create/casting'
+    | '/create/characters'
+    | '/create/completed'
+    | '/create/generating'
+    | '/create/template'
   fileRoutesByTo: FileRoutesByTo
-  to: '/create' | '/my-videos' | '/templates' | '/upload' | '/'
+  to:
+    | '/create'
+    | '/my-videos'
+    | '/templates'
+    | '/upload'
+    | '/'
+    | '/create/casting'
+    | '/create/characters'
+    | '/create/completed'
+    | '/create/generating'
+    | '/create/template'
   id:
     | '__root__'
     | '/_layout'
@@ -82,6 +152,11 @@ export interface FileRouteTypes {
     | '/_layout/templates'
     | '/_layout/upload'
     | '/_layout/'
+    | '/_layout/create/casting'
+    | '/_layout/create/characters'
+    | '/_layout/create/completed'
+    | '/_layout/create/generating'
+    | '/_layout/create/template'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,11 +207,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCreateRouteRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/create/template': {
+      id: '/_layout/create/template'
+      path: '/template'
+      fullPath: '/create/template'
+      preLoaderRoute: typeof LayoutCreateTemplateRouteRouteImport
+      parentRoute: typeof LayoutCreateRouteRoute
+    }
+    '/_layout/create/generating': {
+      id: '/_layout/create/generating'
+      path: '/generating'
+      fullPath: '/create/generating'
+      preLoaderRoute: typeof LayoutCreateGeneratingRouteRouteImport
+      parentRoute: typeof LayoutCreateRouteRoute
+    }
+    '/_layout/create/completed': {
+      id: '/_layout/create/completed'
+      path: '/completed'
+      fullPath: '/create/completed'
+      preLoaderRoute: typeof LayoutCreateCompletedRouteRouteImport
+      parentRoute: typeof LayoutCreateRouteRoute
+    }
+    '/_layout/create/characters': {
+      id: '/_layout/create/characters'
+      path: '/characters'
+      fullPath: '/create/characters'
+      preLoaderRoute: typeof LayoutCreateCharactersRouteRouteImport
+      parentRoute: typeof LayoutCreateRouteRoute
+    }
+    '/_layout/create/casting': {
+      id: '/_layout/create/casting'
+      path: '/casting'
+      fullPath: '/create/casting'
+      preLoaderRoute: typeof LayoutCreateCastingRouteRouteImport
+      parentRoute: typeof LayoutCreateRouteRoute
+    }
   }
 }
 
+interface LayoutCreateRouteRouteChildren {
+  LayoutCreateCastingRouteRoute: typeof LayoutCreateCastingRouteRoute
+  LayoutCreateCharactersRouteRoute: typeof LayoutCreateCharactersRouteRoute
+  LayoutCreateCompletedRouteRoute: typeof LayoutCreateCompletedRouteRoute
+  LayoutCreateGeneratingRouteRoute: typeof LayoutCreateGeneratingRouteRoute
+  LayoutCreateTemplateRouteRoute: typeof LayoutCreateTemplateRouteRoute
+}
+
+const LayoutCreateRouteRouteChildren: LayoutCreateRouteRouteChildren = {
+  LayoutCreateCastingRouteRoute: LayoutCreateCastingRouteRoute,
+  LayoutCreateCharactersRouteRoute: LayoutCreateCharactersRouteRoute,
+  LayoutCreateCompletedRouteRoute: LayoutCreateCompletedRouteRoute,
+  LayoutCreateGeneratingRouteRoute: LayoutCreateGeneratingRouteRoute,
+  LayoutCreateTemplateRouteRoute: LayoutCreateTemplateRouteRoute,
+}
+
+const LayoutCreateRouteRouteWithChildren =
+  LayoutCreateRouteRoute._addFileChildren(LayoutCreateRouteRouteChildren)
+
 interface LayoutRouteChildren {
-  LayoutCreateRouteRoute: typeof LayoutCreateRouteRoute
+  LayoutCreateRouteRoute: typeof LayoutCreateRouteRouteWithChildren
   LayoutMyVideosRoute: typeof LayoutMyVideosRoute
   LayoutTemplatesRoute: typeof LayoutTemplatesRoute
   LayoutUploadRoute: typeof LayoutUploadRoute
@@ -144,7 +273,7 @@ interface LayoutRouteChildren {
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutCreateRouteRoute: LayoutCreateRouteRoute,
+  LayoutCreateRouteRoute: LayoutCreateRouteRouteWithChildren,
   LayoutMyVideosRoute: LayoutMyVideosRoute,
   LayoutTemplatesRoute: LayoutTemplatesRoute,
   LayoutUploadRoute: LayoutUploadRoute,
