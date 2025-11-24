@@ -265,62 +265,69 @@ export function CastingStep({
 				</div>
 			</div>
 
-			{/* Mobile View (Left Panel) */}
-			<div className="lg:hidden flex-1 flex flex-col w-full bg-zinc-950 h-full">
-				<div className="flex-1 overflow-y-auto">
-					<div className="flex flex-col min-h-full">
-						{/* Mobile: Top Preview */}
-						<div className="relative aspect-[9/16] overflow-hidden shadow-xl shrink-0 w-full bg-black">
-							{onBack && (
-								<button
-									type="button"
-									onClick={onBack}
-									className="absolute top-4 left-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
-									aria-label="Go back"
-								>
-									<ChevronLeft className="w-6 h-6" />
-								</button>
-							)}
-							{onCancel && (
-								<button
-									type="button"
-									onClick={onCancel}
-									className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
-									aria-label="Cancel"
-								>
-									<X className="w-6 h-6" />
-								</button>
-							)}
-							<video
-								src={template.videoUrl}
-								poster={template.image}
-								autoPlay
-								muted
-								loop
-								playsInline
-								className="w-full h-full object-cover opacity-80"
-							/>
-							<div className="absolute inset-0 flex items-center justify-center">
-								<div className="bg-white/20 backdrop-blur-md p-4 rounded-xl text-center">
-									<h2 className="text-white text-2xl font-bold drop-shadow-md">
-										{template.name}
-									</h2>
-								</div>
-							</div>
-						</div>
+			{/* Mobile View: Immersive Bottom Sheet Layout */}
+			<div className="lg:hidden flex flex-col w-full h-full relative">
+				{/* 1. Background Video */}
+				<div className="absolute inset-0 z-0 bg-black">
+					<video
+						src={template.videoUrl}
+						poster={template.image}
+						autoPlay
+						muted
+						loop
+						playsInline
+						className="w-full h-full object-cover opacity-60"
+					/>
+					{/* Gradient overlays for readability */}
+					<div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
+				</div>
 
-						{/* Content Area */}
-						<div className="p-4 space-y-6 max-w-lg mx-auto w-full">
-							<div className="pb-2 border-b border-white/10">
-								<h2 className="text-2xl font-bold text-white">
-									Cast Your Roles
-								</h2>
-								<p className="text-zinc-400">
-									Assign characters to roles in "{template.name}"
-								</p>
+				{/* 2. Top Navigation Controls */}
+				<div className="absolute top-0 left-0 right-0 z-50 p-4 flex justify-between items-start">
+					{onBack && (
+						<button
+							type="button"
+							onClick={onBack}
+							className="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
+							aria-label="Go back"
+						>
+							<ChevronLeft className="w-6 h-6" />
+						</button>
+					)}
+					{onCancel && (
+						<button
+							type="button"
+							onClick={onCancel}
+							className="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
+							aria-label="Cancel"
+						>
+							<X className="w-6 h-6" />
+						</button>
+					)}
+				</div>
+
+				{/* 3. Bottom Sheet Content */}
+				<div className="absolute inset-x-0 bottom-0 z-20 flex flex-col max-h-[75vh]">
+					{/* Header Info Overlay */}
+					<div className="px-6 pb-4 text-center">
+						<h2 className="text-white text-2xl font-bold drop-shadow-lg">
+							{template.name}
+						</h2>
+					</div>
+
+					{/* Glassmorphism Sheet */}
+					<div className="bg-zinc-950/80 backdrop-blur-xl rounded-t-[2rem] border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden">
+						{/* Scrollable Roles List */}
+						<div className="flex-1 overflow-y-auto p-6 space-y-6">
+							<div className="flex items-center justify-between">
+								<h3 className="text-lg font-bold text-white">Cast Roles</h3>
+								<span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">
+									{template.roles.filter((r) => assignments[r]).length} /{" "}
+									{template.roles.length} Ready
+								</span>
 							</div>
 
-							<div className="space-y-4">
+							<div className="space-y-3">
 								{template.roles.map((role) => {
 									const assignedId = assignments[role];
 									const assignedChar = characters.find(
@@ -328,48 +335,45 @@ export function CastingStep({
 									);
 
 									return (
-										<div key={role} className="space-y-2">
-											<span className="text-sm font-semibold text-zinc-300 block uppercase tracking-wide">
+										<div key={role} className="space-y-1.5">
+											<span className="text-xs font-semibold text-zinc-400 uppercase tracking-wide ml-1">
 												{role}
 											</span>
 											<button
 												type="button"
 												onClick={() => setActiveRole(role)}
 												className={cn(
-													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-900 group hover:bg-zinc-800",
+													"w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 relative overflow-hidden",
 													assignedChar
-														? "border-white/20"
-														: "border-zinc-800 border-dashed",
+														? "bg-white/10 border-white/20"
+														: "bg-white/5 border-white/5 border-dashed hover:bg-white/10",
 												)}
 											>
 												{assignedChar ? (
 													<>
-														<Avatar className="w-12 h-12 border border-white/10">
+														<Avatar className="w-10 h-10 border border-white/20">
 															<AvatarImage src={assignedChar.imageUrl} />
 															<AvatarFallback>
 																{assignedChar.name[0]}
 															</AvatarFallback>
 														</Avatar>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-white">
+															<div className="font-medium text-white text-sm">
 																{assignedChar.name}
 															</div>
-															<div className="text-xs text-zinc-400">
-																Tap to change
-															</div>
+														</div>
+														<div className="text-xs text-white/50 px-2">
+															Change
 														</div>
 													</>
 												) : (
 													<>
-														<div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center group-hover:border-zinc-600">
-															<User className="w-5 h-5 text-zinc-500" />
+														<div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+															<User className="w-4 h-4 text-zinc-500" />
 														</div>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-zinc-400">
-																Select Actor
-															</div>
-															<div className="text-xs text-zinc-500">
-																Tap to assign
+															<div className="font-medium text-zinc-400 text-sm">
+																Tap to cast
 															</div>
 														</div>
 													</>
@@ -380,36 +384,24 @@ export function CastingStep({
 								})}
 							</div>
 						</div>
-					</div>
-				</div>
 
-				{/* Footer */}
-				<div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-white/10 bg-zinc-950 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
-					<div className="flex items-center gap-4 max-w-lg mx-auto w-full">
-						{onBack && (
+						{/* Footer Action */}
+						<div className="p-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent">
 							<Button
 								type="button"
-								variant="ghost"
-								onClick={onBack}
-								className="hidden sm:flex text-zinc-400 hover:text-white hover:bg-white/10 rounded-full px-6"
+								onClick={onGenerate}
+								disabled={!isComplete || isGenerating}
+								className="w-full rounded-full shadow-lg h-12 text-base bg-white text-black hover:bg-white/90 font-bold"
+								size="lg"
 							>
-								Back
+								{isGenerating ? (
+									<Loader2 className="mr-2 h-5 w-5 animate-spin" />
+								) : (
+									<Play className="mr-2 h-5 w-5 fill-current" />
+								)}
+								Generate Video
 							</Button>
-						)}
-						<Button
-							type="button"
-							onClick={onGenerate}
-							disabled={!isComplete || isGenerating}
-							className="w-full rounded-full shadow-lg h-12 text-base bg-white text-black hover:bg-white/90"
-							size="lg"
-						>
-							{isGenerating ? (
-								<Loader2 className="mr-2 h-5 w-5 animate-spin" />
-							) : (
-								<Play className="mr-2 h-5 w-5 fill-current" />
-							)}
-							Generate Video
-						</Button>
+						</div>
 					</div>
 				</div>
 			</div>
