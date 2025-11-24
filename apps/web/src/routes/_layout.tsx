@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -11,6 +11,8 @@ export const Route = createFileRoute("/_layout")({
 
 function Layout() {
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
+	const location = useLocation();
+	const isCreateFlow = location.pathname.startsWith("/create");
 
 	return (
 		<>
@@ -39,7 +41,7 @@ function Layout() {
 			{/* Mobile layout */}
 			<div className="relative sm:hidden max-h-screen min-h-screen">
 				<Outlet />
-				<MobileBottomNav />
+				{!isCreateFlow && <MobileBottomNav />}
 			</div>
 		</>
 	);

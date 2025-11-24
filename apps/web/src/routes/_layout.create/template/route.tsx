@@ -30,12 +30,23 @@ function TemplatePage() {
 		});
 	};
 
+	const handleBack = () => {
+		// Preserve character selection when going back
+		navigate({
+			to: "/create/characters",
+			search: {
+				characterIds: search.characterIds,
+			},
+		});
+	};
+
 	return (
 		<TemplateSelectionStep
 			templates={TEMPLATES}
 			selectedTemplateId={selectedTemplateId}
 			onSelect={setSelectedTemplateId}
 			onNext={handleNext}
+			onBack={handleBack}
 		/>
 	);
 }

@@ -42,6 +42,8 @@ export const TEMPLATES: Template[] = [
 		description: "Romantic winter vibes",
 		image:
 			"https://images.unsplash.com/photo-1516815231560-8f41ec531527?auto=format&fit=crop&w=400&q=80",
+		videoUrl:
+			"https://videos.pexels.com/video-files/8616750/8616750-hd_1080_1920_25fps.mp4",
 		roles: ["Hero", "Partner"],
 		tags: ["Romance", "12s"],
 	},
@@ -51,6 +53,8 @@ export const TEMPLATES: Template[] = [
 		description: "Travel highlights",
 		image:
 			"https://images.unsplash.com/photo-1469474932796-b494551f87f4?auto=format&fit=crop&w=400&q=80",
+		videoUrl:
+			"https://videos.pexels.com/video-files/6935851/6935851-hd_1080_1920_30fps.mp4",
 		roles: ["Traveler"],
 		tags: ["Travel", "15s"],
 	},
@@ -60,6 +64,8 @@ export const TEMPLATES: Template[] = [
 		description: "Share your day",
 		image:
 			"https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=400&q=80",
+		videoUrl:
+			"https://videos.pexels.com/video-files/3694919/3694919-hd_1080_1920_30fps.mp4",
 		roles: ["Host"],
 		tags: ["Lifestyle", "30s"],
 	},
@@ -69,6 +75,8 @@ export const TEMPLATES: Template[] = [
 		description: "Futuristic aesthetic",
 		image:
 			"https://images.unsplash.com/photo-1535378437321-6a8fd7323c65?auto=format&fit=crop&w=400&q=80",
+		videoUrl:
+			"https://videos.pexels.com/video-files/5645107/5645107-hd_1080_1920_25fps.mp4",
 		roles: ["Hacker", "Target"],
 		tags: ["Sci-Fi", "10s"],
 	},

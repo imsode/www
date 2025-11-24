@@ -33,9 +33,13 @@ export function CastingStep({
 		<StepContainer className="flex flex-col h-full">
 			{/* Top: Preview */}
 			<div className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-xl mb-6 shrink-0 max-h-[40vh] w-full sm:w-auto sm:mx-auto">
-				<img
-					src={template.image}
-					alt={template.name}
+				<video
+					src={template.videoUrl}
+					poster={template.image}
+					autoPlay
+					muted
+					loop
+					playsInline
 					className="w-full h-full object-cover opacity-60"
 				/>
 				<div className="absolute inset-0 flex items-center justify-center">

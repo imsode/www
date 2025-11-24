@@ -10,6 +10,7 @@ export interface Template {
 	name: string;
 	description: string;
 	image: string;
+	videoUrl: string;
 	roles: string[]; // e.g. ["Hero", "Partner"]
 	tags: string[];
 }
