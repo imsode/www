@@ -266,7 +266,7 @@ export function CastingStep({
 			</div>
 
 			{/* Mobile View (Left Panel) */}
-			<div className="lg:hidden flex-1 flex flex-col w-full bg-white h-full">
+			<div className="lg:hidden flex-1 flex flex-col w-full bg-zinc-950 h-full">
 				<div className="flex-1 overflow-y-auto">
 					<div className="flex flex-col min-h-full">
 						{/* Mobile: Top Preview */}
@@ -311,9 +311,11 @@ export function CastingStep({
 
 						{/* Content Area */}
 						<div className="p-4 space-y-6 max-w-lg mx-auto w-full">
-							<div className="pb-2 border-b border-gray-100">
-								<h2 className="text-2xl font-bold">Cast Your Roles</h2>
-								<p className="text-gray-500">
+							<div className="pb-2 border-b border-white/10">
+								<h2 className="text-2xl font-bold text-white">
+									Cast Your Roles
+								</h2>
+								<p className="text-zinc-400">
 									Assign characters to roles in "{template.name}"
 								</p>
 							</div>
@@ -327,46 +329,46 @@ export function CastingStep({
 
 									return (
 										<div key={role} className="space-y-2">
-											<span className="text-sm font-semibold text-gray-900 block uppercase tracking-wide">
+											<span className="text-sm font-semibold text-zinc-300 block uppercase tracking-wide">
 												{role}
 											</span>
 											<button
 												type="button"
 												onClick={() => setActiveRole(role)}
 												className={cn(
-													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-gray-50 group hover:bg-gray-100",
+													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-900 group hover:bg-zinc-800",
 													assignedChar
-														? "border-black/10"
-														: "border-gray-200 border-dashed",
+														? "border-white/20"
+														: "border-zinc-800 border-dashed",
 												)}
 											>
 												{assignedChar ? (
 													<>
-														<Avatar className="w-12 h-12 border border-gray-200">
+														<Avatar className="w-12 h-12 border border-white/10">
 															<AvatarImage src={assignedChar.imageUrl} />
 															<AvatarFallback>
 																{assignedChar.name[0]}
 															</AvatarFallback>
 														</Avatar>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-gray-900">
+															<div className="font-medium text-white">
 																{assignedChar.name}
 															</div>
-															<div className="text-xs text-gray-500">
+															<div className="text-xs text-zinc-400">
 																Tap to change
 															</div>
 														</div>
 													</>
 												) : (
 													<>
-														<div className="w-12 h-12 rounded-full bg-white border border-gray-200 flex items-center justify-center group-hover:border-gray-300">
-															<User className="w-5 h-5 text-gray-400" />
+														<div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center group-hover:border-zinc-600">
+															<User className="w-5 h-5 text-zinc-500" />
 														</div>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-gray-500">
+															<div className="font-medium text-zinc-400">
 																Select Actor
 															</div>
-															<div className="text-xs text-gray-400">
+															<div className="text-xs text-zinc-500">
 																Tap to assign
 															</div>
 														</div>
@@ -382,14 +384,14 @@ export function CastingStep({
 				</div>
 
 				{/* Footer */}
-				<div className="p-4 border-t bg-white z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+				<div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-white/10 bg-zinc-950 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
 					<div className="flex items-center gap-4 max-w-lg mx-auto w-full">
 						{onBack && (
 							<Button
 								type="button"
 								variant="ghost"
 								onClick={onBack}
-								className="hidden sm:flex text-gray-500 hover:text-black rounded-full px-6"
+								className="hidden sm:flex text-zinc-400 hover:text-white hover:bg-white/10 rounded-full px-6"
 							>
 								Back
 							</Button>
@@ -398,7 +400,7 @@ export function CastingStep({
 							type="button"
 							onClick={onGenerate}
 							disabled={!isComplete || isGenerating}
-							className="w-full rounded-full shadow-lg h-12 text-base"
+							className="w-full rounded-full shadow-lg h-12 text-base bg-white text-black hover:bg-white/90"
 							size="lg"
 						>
 							{isGenerating ? (

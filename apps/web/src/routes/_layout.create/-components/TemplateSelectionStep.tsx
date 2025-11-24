@@ -72,7 +72,7 @@ const MobileTemplateCarousel = ({
 			className="w-full h-full"
 			opts={{ align: "start", loop: true }}
 		>
-			<CarouselContent className="h-[100vh] mt-0">
+			<CarouselContent className="h-[100dvh] mt-0">
 				{templates.map((template) => (
 					<CarouselItem key={template.id} className="h-full pt-0">
 						<div className="relative w-full h-full bg-black">
@@ -86,7 +86,7 @@ const MobileTemplateCarousel = ({
 								className="absolute inset-0 w-full h-full object-cover opacity-80"
 							/>
 							<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 flex flex-col justify-end p-6 pb-24">
-								<h3 className="text-3xl font-bold text-white mb-2">
+								<h3 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
 									{template.name}
 								</h3>
 								<TemplateTags tags={template.tags} />
