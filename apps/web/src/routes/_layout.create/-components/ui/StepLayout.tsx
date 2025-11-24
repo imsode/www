@@ -38,7 +38,7 @@ export function StepContainer({
 
 export function StepFooter({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="fixed bottom-0 sm:left-[var(--sidebar-width)] right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 backdrop-blur-md border-t border-gray-100 z-[60] flex justify-center items-center w-full sm:w-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+		<div className="fixed bottom-0 left-0 sm:left-[var(--sidebar-width)] right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-white/80 backdrop-blur-md border-t border-gray-100 z-[60] flex justify-center items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
 			<div className="max-w-4xl w-full flex justify-center sm:justify-end">
 				{children}
 			</div>
