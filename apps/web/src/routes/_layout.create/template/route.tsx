@@ -20,12 +20,17 @@ function TemplatePage() {
 		null,
 	);
 
-	const handleNext = () => {
+	const handleNext = (templateId?: string) => {
+		const idToUse =
+			typeof templateId === "string" ? templateId : selectedTemplateId;
+
+		if (!idToUse) return;
+
 		navigate({
 			to: "/create/casting",
 			search: {
 				characterIds: search.characterIds,
-				templateId: selectedTemplateId!,
+				templateId: idToUse,
 			},
 		});
 	};

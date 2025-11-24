@@ -13,14 +13,14 @@ interface TemplateSelectionStepProps {
 	templates: Template[];
 	selectedTemplateId: string | null;
 	onSelect: (id: string) => void;
-	onNext: () => void;
+	onNext: (templateId?: string) => void;
 	onBack?: () => void;
 }
 
 interface MobileTemplateCarouselProps {
 	templates: Template[];
 	onSelect: (id: string) => void;
-	onNext: () => void;
+	onNext: (templateId?: string) => void;
 	onBack?: () => void;
 }
 
@@ -93,7 +93,7 @@ const MobileTemplateCarousel = ({
 									type="button"
 									onClick={() => {
 										onSelect(template.id);
-										onNext();
+										onNext(template.id);
 									}}
 									className="w-full rounded-full bg-white text-black hover:bg-white/90"
 									size="lg"
@@ -219,7 +219,7 @@ export function TemplateSelectionStep({
 				<StepFooter>
 					<Button
 						type="button"
-						onClick={onNext}
+						onClick={() => onNext()}
 						disabled={!selectedTemplateId}
 						className="rounded-full px-8 w-full sm:w-auto"
 					>
