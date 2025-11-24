@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import type { Template } from "../-types";
-import { StepFooter } from "./ui/StepLayout";
 
 interface TemplateSelectionStepProps {
 	templates: Template[];
@@ -25,12 +24,6 @@ interface MobileTemplateCarouselProps {
 	onNext: (templateId?: string) => void;
 	onBack?: () => void;
 	onCancel?: () => void;
-}
-
-interface TemplateGridProps {
-	templates: Template[];
-	selectedTemplateId: string | null;
-	onSelect: (id: string) => void;
 }
 
 const TemplateTags = ({ tags }: { tags: string[] }) => (
@@ -123,15 +116,19 @@ const MobileTemplateCarousel = ({
 	</div>
 );
 
+interface TemplateCardProps {
+	template: Template;
+	isSelected: boolean;
+	onSelect: (id: string) => void;
+	onHover?: (id: string | null) => void;
+}
+
 const TemplateCard = ({
 	template,
 	isSelected,
 	onSelect,
-}: {
-	template: Template;
-	isSelected: boolean;
-	onSelect: (id: string) => void;
-}) => {
+	onHover,
+}: TemplateCardProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
 
@@ -140,25 +137,33 @@ const TemplateCard = ({
 			videoRef.current?.play().catch(() => {
 				// Ignore autoplay errors
 			});
+			onHover?.(template.id);
 		} else {
 			videoRef.current?.pause();
 			if (videoRef.current) {
 				videoRef.current.currentTime = 0;
 			}
 		}
-	}, [isHovered]);
+	}, [isHovered, template.id, onHover]);
 
 	return (
 		<button
 			type="button"
 			onClick={() => onSelect(template.id)}
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
+			onMouseEnter={() => {
+				setIsHovered(true);
+				onHover?.(template.id);
+			}}
+			onMouseLeave={() => {
+				setIsHovered(false);
+				onHover?.(null);
+			}}
 			className={cn(
-				"group relative aspect-[9/16] rounded-xl overflow-hidden border-2 text-left transition-all bg-gray-900",
+				"group relative w-full aspect-[9/16] rounded-xl overflow-hidden border-2 text-left transition-all",
 				isSelected
-					? "border-primary ring-2 ring-primary ring-offset-2"
-					: "border-transparent hover:border-primary/50",
+					? "border-white ring-2 ring-white/20 shadow-xl scale-[1.02]"
+					: "border-transparent hover:border-white/30 hover:shadow-lg opacity-80 hover:opacity-100",
+				"bg-zinc-900", // Dark card background
 			)}
 		>
 			<img
@@ -218,25 +223,6 @@ const TemplateCard = ({
 	);
 };
 
-const TemplateGrid = ({
-	templates,
-	selectedTemplateId,
-	onSelect,
-}: TemplateGridProps) => (
-	<div className="w-full pb-32">
-		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
-			{templates.map((template) => (
-				<TemplateCard
-					key={template.id}
-					template={template}
-					onSelect={onSelect}
-					isSelected={selectedTemplateId === template.id}
-				/>
-			))}
-		</div>
-	</div>
-);
-
 export function TemplateSelectionStep({
 	templates,
 	selectedTemplateId,
@@ -245,45 +231,106 @@ export function TemplateSelectionStep({
 	onBack,
 	onCancel,
 }: TemplateSelectionStepProps) {
+	// State for the active preview (hovered or selected)
+	const [hoveredTemplateId, setHoveredTemplateId] = useState<string | null>(
+		null,
+	);
+
+	// Determine which template to show in the large preview
+	const activeTemplateId =
+		hoveredTemplateId || selectedTemplateId || templates[0]?.id;
+	const activeTemplate = templates.find((t) => t.id === activeTemplateId);
+
 	return (
-		<div className="min-h-[calc(100vh-4rem)] flex flex-col bg-white">
-			<MobileTemplateCarousel
-				templates={templates}
-				onSelect={onSelect}
-				onNext={onNext}
-				onBack={onBack}
-				onCancel={onCancel}
-			/>
-
-			<div className="hidden sm:block container mx-auto p-4">
-				<TemplateGrid
+		<div className="h-screen flex flex-col bg-black overflow-hidden relative">
+			{/* Mobile View: Full Screen Vertical Carousel */}
+			<div className="lg:hidden w-full h-full">
+				<MobileTemplateCarousel
 					templates={templates}
-					selectedTemplateId={selectedTemplateId}
 					onSelect={onSelect}
+					onNext={onNext}
+					onBack={onBack}
+					onCancel={onCancel}
 				/>
+			</div>
 
-				<StepFooter>
-					<div className="flex items-center gap-4">
-						{onBack && (
+			{/* Desktop View: Sora-style Absolute Layout */}
+			<div className="hidden lg:flex w-full h-full relative bg-black">
+				{/* 1. The Stage (Left) - Flex-1 but padded to respect absolute sidebar */}
+				<div className="flex-1 h-full flex items-center justify-center pr-[420px] relative">
+					{activeTemplate && (
+						<div className="relative h-full p-4 aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950">
+							<video
+								key={activeTemplate.id}
+								src={activeTemplate.videoUrl}
+								poster={activeTemplate.image}
+								autoPlay
+								muted
+								loop
+								playsInline
+								className="w-full h-full object-cover"
+							/>
+							{/* Cinematic Info Overlay */}
+							<div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500">
+								<h2 className="text-white text-3xl font-bold drop-shadow-md">
+									{activeTemplate.name}
+								</h2>
+								<p className="text-white/80 mt-2 line-clamp-2 text-lg">
+									{activeTemplate.description}
+								</p>
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* 2. The Inspector (Right) - Absolute Positioned */}
+				<div className="absolute right-0 top-0 h-full w-[400px] bg-zinc-900 border-l border-white/10 flex flex-col shadow-2xl z-20">
+					{/* Header */}
+					<div className="p-6 border-b border-white/10 bg-zinc-900 z-10">
+						<h2 className="text-xl font-bold text-white mb-1">Choose Style</h2>
+						<p className="text-zinc-400 text-sm">Select a template to start</p>
+					</div>
+
+					{/* Scrollable Grid */}
+					<div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+						<div className="grid grid-cols-2 gap-3">
+							{templates.map((template) => (
+								<div key={template.id}>
+									<TemplateCard
+										template={template}
+										onSelect={onSelect}
+										isSelected={selectedTemplateId === template.id}
+										onHover={setHoveredTemplateId}
+									/>
+								</div>
+							))}
+						</div>
+					</div>
+
+					{/* Footer Actions */}
+					<div className="p-6 border-t border-white/10 bg-zinc-900 z-10">
+						<div className="flex items-center gap-3">
+							{onBack && (
+								<Button
+									type="button"
+									variant="ghost"
+									onClick={onBack}
+									className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-full px-6"
+								>
+									Back
+								</Button>
+							)}
 							<Button
 								type="button"
-								variant="ghost"
-								onClick={onBack}
-								className="rounded-full px-6"
+								onClick={() => onNext()}
+								disabled={!selectedTemplateId}
+								className="flex-1 rounded-full bg-white text-black hover:bg-white/90 font-semibold h-12"
 							>
-								Back
+								Continue <ArrowRight className="ml-2 h-4 w-4" />
 							</Button>
-						)}
-						<Button
-							type="button"
-							onClick={() => onNext()}
-							disabled={!selectedTemplateId}
-							className="rounded-full px-8 w-full sm:w-auto"
-						>
-							Continue <ArrowRight className="ml-2 h-4 w-4" />
-						</Button>
+						</div>
 					</div>
-				</StepFooter>
+				</div>
 			</div>
 		</div>
 	);
