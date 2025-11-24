@@ -16,7 +16,7 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Route as CreateRoute } from "@/routes/_layout.create";
+import { Route as CreateRoute } from "@/routes/_layout.create/route";
 import { Route as IndexRoute } from "@/routes/_layout.index";
 import { Route as MyVideosRoute } from "@/routes/_layout.my-videos";
 import { Route as TemplatesRoute } from "@/routes/_layout.templates";

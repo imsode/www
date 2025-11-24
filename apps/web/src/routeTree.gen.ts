@@ -14,7 +14,7 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
 import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
 import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
-import { Route as LayoutCreateRouteImport } from './routes/_layout.create'
+import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/route'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -40,21 +40,21 @@ const LayoutMyVideosRoute = LayoutMyVideosRouteImport.update({
   path: '/my-videos',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutCreateRoute = LayoutCreateRouteImport.update({
+const LayoutCreateRouteRoute = LayoutCreateRouteRouteImport.update({
   id: '/create',
   path: '/create',
   getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/create': typeof LayoutCreateRoute
+  '/create': typeof LayoutCreateRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
-  '/create': typeof LayoutCreateRoute
+  '/create': typeof LayoutCreateRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
@@ -63,7 +63,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
-  '/_layout/create': typeof LayoutCreateRoute
+  '/_layout/create': typeof LayoutCreateRouteRoute
   '/_layout/my-videos': typeof LayoutMyVideosRoute
   '/_layout/templates': typeof LayoutTemplatesRoute
   '/_layout/upload': typeof LayoutUploadRoute
@@ -129,14 +129,14 @@ declare module '@tanstack/react-router' {
       id: '/_layout/create'
       path: '/create'
       fullPath: '/create'
-      preLoaderRoute: typeof LayoutCreateRouteImport
+      preLoaderRoute: typeof LayoutCreateRouteRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
-  LayoutCreateRoute: typeof LayoutCreateRoute
+  LayoutCreateRouteRoute: typeof LayoutCreateRouteRoute
   LayoutMyVideosRoute: typeof LayoutMyVideosRoute
   LayoutTemplatesRoute: typeof LayoutTemplatesRoute
   LayoutUploadRoute: typeof LayoutUploadRoute
@@ -144,7 +144,7 @@ interface LayoutRouteChildren {
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutCreateRoute: LayoutCreateRoute,
+  LayoutCreateRouteRoute: LayoutCreateRouteRoute,
   LayoutMyVideosRoute: LayoutMyVideosRoute,
   LayoutTemplatesRoute: LayoutTemplatesRoute,
   LayoutUploadRoute: LayoutUploadRoute,
