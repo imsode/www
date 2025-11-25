@@ -41,9 +41,9 @@ export const TEMPLATES: Template[] = [
 		name: "Winter Kiss",
 		description: "Romantic winter vibes",
 		image:
-			"https://images.unsplash.com/photo-1516815231560-8f41ec531527?auto=format&fit=crop&w=400&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/8616750/8616750-hd_1080_1920_25fps.mp4",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/manifest/video.m3u8",
 		roles: ["Hero", "Partner"],
 		tags: ["Romance", "12s"],
 	},
@@ -52,9 +52,9 @@ export const TEMPLATES: Template[] = [
 		name: "Epic Journey",
 		description: "Travel highlights",
 		image:
-			"https://images.unsplash.com/photo-1469474932796-b494551f87f4?auto=format&fit=crop&w=400&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/6935851/6935851-hd_1080_1920_30fps.mp4",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/manifest/video.m3u8",
 		roles: ["Traveler"],
 		tags: ["Travel", "15s"],
 	},
@@ -63,9 +63,9 @@ export const TEMPLATES: Template[] = [
 		name: "Daily Vlog",
 		description: "Share your day",
 		image:
-			"https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=400&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/3694919/3694919-hd_1080_1920_30fps.mp4",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/manifest/video.m3u8",
 		roles: ["Host"],
 		tags: ["Lifestyle", "30s"],
 	},
@@ -74,9 +74,9 @@ export const TEMPLATES: Template[] = [
 		name: "Cyberpunk",
 		description: "Futuristic aesthetic",
 		image:
-			"https://images.unsplash.com/photo-1535378437321-6a8fd7323c65?auto=format&fit=crop&w=400&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/5645107/5645107-hd_1080_1920_25fps.mp4",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/manifest/video.m3u8",
 		roles: ["Hacker", "Target"],
 		tags: ["Sci-Fi", "10s"],
 	},
