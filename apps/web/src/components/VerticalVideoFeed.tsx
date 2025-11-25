@@ -8,7 +8,9 @@ import {
 	useState,
 } from "react";
 
+import { UnmuteOverlay } from "@/components/UnmuteOverlay";
 import { VideoActions } from "@/components/VideoActions";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { cn } from "@/lib/utils";
 
 export type FeedVideo = {
@@ -55,7 +57,6 @@ export const VerticalVideoFeed = forwardRef<
 	ref,
 ) {
 	const parentRef = useRef<HTMLDivElement | null>(null);
-	const videoElsRef = useRef<Record<number, HTMLVideoElement | null>>({});
 
 	// Initial estimate using window height to reduce initial shift
 	const [rowHeight, setRowHeight] = useState(() => {
@@ -109,10 +110,8 @@ export const VerticalVideoFeed = forwardRef<
 		[rowHeight, videos.length],
 	);
 
+	// Scroll to active index when it changes externally
 	useEffect(() => {
-		// Only scroll if the active index changes from outside or initial load
-		// and we are not currently scrolling manually (managed by CSS snap mostly)
-		// But here we force it to ensure sync.
 		scrollToVideo(activeIndex, "auto");
 	}, [activeIndex, scrollToVideo]);
 
@@ -141,24 +140,11 @@ export const VerticalVideoFeed = forwardRef<
 		}
 	}, [
 		virtualItems,
-		virtualizer.scrollOffset, // depend on scroll offset changes
+		virtualizer.scrollOffset,
 		activeIndex,
 		onActiveIndexChange,
 		videos.length,
 	]);
-
-	// Play/Pause logic
-	useEffect(() => {
-		const activeId = videos[activeIndex]?.id;
-		Object.entries(videoElsRef.current).forEach(([id, el]) => {
-			if (!el) return;
-			if (Number(id) === activeId) {
-				el.play().catch(() => {});
-			} else {
-				el.pause();
-			}
-		});
-	}, [activeIndex, videos]);
 
 	// Trigger onEndReached when approaching the end of the list
 	useEffect(() => {
@@ -170,27 +156,6 @@ export const VerticalVideoFeed = forwardRef<
 			onEndReached();
 		}
 	}, [activeIndex, videos.length, onEndReached]);
-
-	// Track previous visible indices to avoid cleanup on every render
-	const prevVisibleIndicesRef = useRef<string>("");
-
-	// Clean up video refs for unmounted items
-	useEffect(() => {
-		const currentIndicesKey = virtualItems.map((item) => item.index).join(",");
-		if (currentIndicesKey === prevVisibleIndicesRef.current) return;
-		prevVisibleIndicesRef.current = currentIndicesKey;
-
-		const visibleIds = new Set(
-			virtualItems
-				.map((item) => videos[item.index]?.id)
-				.filter((id): id is number => id !== undefined),
-		);
-		for (const id of Object.keys(videoElsRef.current)) {
-			if (!visibleIds.has(Number(id))) {
-				delete videoElsRef.current[Number(id)];
-			}
-		}
-	}, [virtualItems, videos]);
 
 	const handlePrev = useCallback(() => {
 		scrollToVideo(activeIndex - 1);
@@ -229,11 +194,9 @@ export const VerticalVideoFeed = forwardRef<
 			ref={parentRef}
 			className={cn(
 				"relative w-full overflow-y-auto bg-black snap-y snap-mandatory",
-				// Hide scrollbar for cleaner look
 				"scrollbar-hide",
 				className,
 			)}
-			// We rely on CSS Scroll Snap, so no manual onScroll handler needed for snapping
 		>
 			<div
 				style={{
@@ -245,14 +208,16 @@ export const VerticalVideoFeed = forwardRef<
 				{virtualItems.map((virtualRow) => {
 					const video = videos[virtualRow.index];
 					if (!video) return null;
+
 					const isVideoLiked = likedVideos.has(video.id);
-					// Only load video source for items near the active index
+					const isActive = virtualRow.index === activeIndex;
+					// Only mount VideoPlayer for items near the active index
 					const isNearActive = Math.abs(virtualRow.index - activeIndex) <= 2;
+
 					return (
 						<div
 							key={virtualRow.key}
 							data-index={virtualRow.index}
-							// Use ref callback to measure element to ensure accurate offsets
 							ref={virtualizer.measureElement}
 							className="snap-start snap-always"
 							style={{
@@ -264,20 +229,25 @@ export const VerticalVideoFeed = forwardRef<
 								transform: `translateY(${virtualRow.start}px)`,
 							}}
 						>
-							{/* Added wrapper with overflow-hidden and proper containment */}
 							<div className="relative h-full w-full overflow-hidden bg-black">
-								<video
-									ref={(el) => {
-										videoElsRef.current[video.id] = el;
-									}}
-									src={isNearActive ? video.videoUrl : undefined}
-									poster={video.thumbnail}
-									className="h-full w-full object-cover"
-									preload="none"
-									muted
-									playsInline
-									loop
-								/>
+								{isNearActive ? (
+									<VideoPlayer
+										src={video.videoUrl}
+										poster={video.thumbnail}
+										isActive={isActive}
+									>
+										<UnmuteOverlay />
+									</VideoPlayer>
+								) : (
+									// Show poster only for distant videos
+									<img
+										src={video.thumbnail}
+										alt={video.caption}
+										className="h-full w-full object-cover"
+									/>
+								)}
+
+								{/* Gradient overlay */}
 								<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
 								{/* Video Info Overlay */}

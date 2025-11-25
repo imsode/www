@@ -142,6 +142,38 @@ code {
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   }
 
+  /* Vidstack player overrides for full-bleed video */
+  .video-player {
+    --media-aspect-ratio: auto !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .video-player [data-media-provider] {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .video-player video {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  .video-player [data-media-poster] {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
