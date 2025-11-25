@@ -16,7 +16,7 @@ function CompletedPage() {
 	const search = Route.useSearch();
 
 	const handleRestart = () => {
-		navigate({ to: "/create/characters" });
+		navigate({ to: "/create/template" });
 	};
 
 	return <CompletedStep videoUrl={search.videoUrl} onRestart={handleRestart} />;
