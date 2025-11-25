@@ -80,6 +80,7 @@ export function VideoPlayer({
 			ref={playerRef}
 			src={src}
 			poster={poster}
+			autoPlay={isActive}
 			muted
 			loop
 			playsInline
