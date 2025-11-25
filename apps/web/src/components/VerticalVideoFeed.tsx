@@ -35,6 +35,7 @@ export type VerticalVideoFeedProps = {
 	onActiveIndexChange: (index: number) => void;
 	likedVideos: Set<number>;
 	onLike: (videoId: number) => void;
+	onEndReached?: () => void;
 	className?: string;
 };
 
@@ -42,7 +43,15 @@ export const VerticalVideoFeed = forwardRef<
 	VideoFeedHandle,
 	VerticalVideoFeedProps
 >(function VerticalVideoFeed(
-	{ videos, activeIndex, onActiveIndexChange, likedVideos, onLike, className },
+	{
+		videos,
+		activeIndex,
+		onActiveIndexChange,
+		likedVideos,
+		onLike,
+		onEndReached,
+		className,
+	},
 	ref,
 ) {
 	const parentRef = useRef<HTMLDivElement | null>(null);
@@ -151,6 +160,38 @@ export const VerticalVideoFeed = forwardRef<
 		});
 	}, [activeIndex, videos]);
 
+	// Trigger onEndReached when approaching the end of the list
+	useEffect(() => {
+		if (
+			videos.length >= 3 &&
+			activeIndex >= videos.length - 3 &&
+			onEndReached
+		) {
+			onEndReached();
+		}
+	}, [activeIndex, videos.length, onEndReached]);
+
+	// Track previous visible indices to avoid cleanup on every render
+	const prevVisibleIndicesRef = useRef<string>("");
+
+	// Clean up video refs for unmounted items
+	useEffect(() => {
+		const currentIndicesKey = virtualItems.map((item) => item.index).join(",");
+		if (currentIndicesKey === prevVisibleIndicesRef.current) return;
+		prevVisibleIndicesRef.current = currentIndicesKey;
+
+		const visibleIds = new Set(
+			virtualItems
+				.map((item) => videos[item.index]?.id)
+				.filter((id): id is number => id !== undefined),
+		);
+		for (const id of Object.keys(videoElsRef.current)) {
+			if (!visibleIds.has(Number(id))) {
+				delete videoElsRef.current[Number(id)];
+			}
+		}
+	}, [virtualItems, videos]);
+
 	const handlePrev = useCallback(() => {
 		scrollToVideo(activeIndex - 1);
 	}, [activeIndex, scrollToVideo]);
@@ -205,6 +246,8 @@ export const VerticalVideoFeed = forwardRef<
 					const video = videos[virtualRow.index];
 					if (!video) return null;
 					const isVideoLiked = likedVideos.has(video.id);
+					// Only load video source for items near the active index
+					const isNearActive = Math.abs(virtualRow.index - activeIndex) <= 2;
 					return (
 						<div
 							key={virtualRow.key}
@@ -227,9 +270,10 @@ export const VerticalVideoFeed = forwardRef<
 									ref={(el) => {
 										videoElsRef.current[video.id] = el;
 									}}
-									src={video.videoUrl}
-									// poster={video.thumbnail}
+									src={isNearActive ? video.videoUrl : undefined}
+									poster={video.thumbnail}
 									className="h-full w-full object-cover"
+									preload="none"
 									muted
 									playsInline
 									loop
