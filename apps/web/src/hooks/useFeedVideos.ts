@@ -13,7 +13,7 @@ const MOCK_VIDEOS: FeedVideo[] = [
 		comments: 340,
 		shares: 89,
 		thumbnail:
-			"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/041aea9dcec7a96be5dd786080756be9/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://videos.pexels.com/video-files/6740718/6740718-hd_1080_1920_25fps.mp4",
 		tags: ["adventure", "nature", "stories"],
@@ -27,7 +27,7 @@ const MOCK_VIDEOS: FeedVideo[] = [
 		comments: 210,
 		shares: 45,
 		thumbnail:
-			"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/fbf0cf2d02ec5d6df6537cd8917b5abb/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://videos.pexels.com/video-files/5310966/5310966-hd_1080_1920_25fps.mp4",
 		tags: ["creativity", "daily", "moments"],
@@ -41,7 +41,7 @@ const MOCK_VIDEOS: FeedVideo[] = [
 		comments: 456,
 		shares: 120,
 		thumbnail:
-			"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=900&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/c5624ba8ba8dadb2f50a5d4e09a07489/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://videos.pexels.com/video-files/6893205/6893205-hd_1080_1920_25fps.mp4",
 		tags: ["travel", "greece", "sunset"],
@@ -55,9 +55,9 @@ const MOCK_VIDEOS: FeedVideo[] = [
 		comments: 189,
 		shares: 67,
 		thumbnail:
-			"https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=900&q=80",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/a151644ca41f371d24c5a777b2e0a087/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/4536395/4536395-hd_1080_1920_25fps.mp4",
+			"https://replicate.delivery/xezq/rXtBWnSju7KCEdW1Ru8h9otlNe0y7YCmgbcMHxxSGstWPz1KA/tmp7fps4y65.mp4",
 		tags: ["fitness", "workout", "motivation"],
 	},
 	{
