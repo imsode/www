@@ -1,7 +1,24 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Bookmark, Home, LayoutGrid, Search, Upload } from "lucide-react";
+import {
+	Bell,
+	Bookmark,
+	ChevronsUpDown,
+	Home,
+	LayoutGrid,
+	LogOut,
+	Search,
+	Upload,
+} from "lucide-react";
 import type { ElementType } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Sidebar,
 	SidebarContent,
@@ -16,10 +33,107 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
+import { signOut, useSession } from "@/lib/auth/auth-client";
 import { Route as CreateRoute } from "@/routes/_layout.create/route";
 import { Route as IndexRoute } from "@/routes/_layout.index";
 import { Route as MyVideosRoute } from "@/routes/_layout.my-videos";
 import { Route as TemplatesRoute } from "@/routes/_layout.templates";
+
+function UserMenu() {
+	const { data: session, isPending } = useSession();
+
+	if (isPending) {
+		return (
+			<SidebarMenuButton size="lg" className="cursor-default">
+				<div className="flex items-center gap-3">
+					<div className="h-8 w-8 rounded-lg bg-sidebar-accent animate-pulse" />
+					<div className="flex-1 space-y-1">
+						<div className="h-4 w-20 bg-sidebar-accent animate-pulse rounded" />
+						<div className="h-3 w-28 bg-sidebar-accent animate-pulse rounded" />
+					</div>
+				</div>
+			</SidebarMenuButton>
+		);
+	}
+
+	if (!session?.user) {
+		return null;
+	}
+
+	const user = session.user;
+	const initials = user.name
+		? user.name
+				.split(" ")
+				.map((n) => n[0])
+				.join("")
+				.toUpperCase()
+				.slice(0, 2)
+		: user.email?.[0]?.toUpperCase() ?? "U";
+
+	const handleSignOut = async () => {
+		await signOut({
+			fetchOptions: {
+				onSuccess: () => {
+					window.location.href = "/login";
+				},
+			},
+		});
+	};
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<SidebarMenuButton
+					size="lg"
+					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+				>
+					<Avatar className="h-8 w-8 rounded-lg">
+						<AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+						<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+					</Avatar>
+					<div className="grid flex-1 text-left text-sm leading-tight">
+						<span className="truncate font-semibold">
+							{user.name || "User"}
+						</span>
+						<span className="truncate text-xs text-muted-foreground">
+							{user.email}
+						</span>
+					</div>
+					<ChevronsUpDown className="ml-auto size-4" />
+				</SidebarMenuButton>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+				side="top"
+				align="start"
+				sideOffset={4}
+			>
+				<DropdownMenuLabel className="p-0 font-normal">
+					<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+						<Avatar className="h-8 w-8 rounded-lg">
+							<AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+							<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+						</Avatar>
+						<div className="grid flex-1 text-left text-sm leading-tight">
+							<span className="truncate font-semibold">
+								{user.name || "User"}
+							</span>
+							<span className="truncate text-xs text-muted-foreground">
+								{user.email}
+							</span>
+						</div>
+					</div>
+				</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem onClick={handleSignOut}>
+					<LogOut />
+					Sign out
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
 
 type NavItem = {
 	label: string;
@@ -141,22 +255,7 @@ export function AppSidebar({
 			<SidebarFooter>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton
-							size="lg"
-							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-						>
-							<Avatar className="h-8 w-8 rounded-lg">
-								<AvatarImage
-									src="https://api.dicebear.com/7.x/avataaars/svg?seed=Viewer"
-									alt="Viewer"
-								/>
-								<AvatarFallback className="rounded-lg">U</AvatarFallback>
-							</Avatar>
-							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">Viewer</span>
-								<span className="truncate text-xs">viewer@example.com</span>
-							</div>
-						</SidebarMenuButton>
+						<UserMenu />
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarFooter>

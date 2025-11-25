@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
@@ -21,6 +23,16 @@ import { Route as LayoutCreateGeneratingRouteRouteImport } from './routes/_layou
 import { Route as LayoutCreateCompletedRouteRouteImport } from './routes/_layout.create/completed/route'
 import { Route as LayoutCreateCastingRouteRouteImport } from './routes/_layout.create/casting/route'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
@@ -81,6 +93,8 @@ const LayoutCreateCastingRouteRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/create': typeof LayoutCreateRouteRouteWithChildren
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
@@ -93,6 +107,8 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/create': typeof LayoutCreateRouteRouteWithChildren
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
@@ -107,6 +123,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/_layout/create': typeof LayoutCreateRouteRouteWithChildren
   '/_layout/my-videos': typeof LayoutMyVideosRoute
   '/_layout/templates': typeof LayoutTemplatesRoute
@@ -121,6 +139,8 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/login'
+    | '/signup'
     | '/create'
     | '/my-videos'
     | '/templates'
@@ -133,6 +153,8 @@ export interface FileRouteTypes {
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
+    | '/signup'
     | '/create'
     | '/my-videos'
     | '/templates'
@@ -146,6 +168,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_layout'
+    | '/login'
+    | '/signup'
     | '/_layout/create'
     | '/_layout/my-videos'
     | '/_layout/templates'
@@ -160,11 +184,27 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_layout': {
       id: '/_layout'
       path: ''
@@ -283,6 +323,8 @@ const LayoutRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
