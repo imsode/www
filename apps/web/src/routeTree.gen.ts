@@ -16,6 +16,7 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
 import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
 import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
+import { Route as ApiFeedRouteRouteImport } from './routes/api/feed/route'
 import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as LayoutCreateTemplateRouteRouteImport } from './routes/_layout.create/template/route'
@@ -57,6 +58,11 @@ const LayoutMyVideosRoute = LayoutMyVideosRouteImport.update({
   path: '/my-videos',
   getParentRoute: () => LayoutRoute,
 } as any)
+const ApiFeedRouteRoute = ApiFeedRouteRouteImport.update({
+  id: '/api/feed',
+  path: '/api/feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutCreateRouteRoute = LayoutCreateRouteRouteImport.update({
   id: '/create',
   path: '/create',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/create': typeof LayoutCreateRouteRouteWithChildren
+  '/api/feed': typeof ApiFeedRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/create': typeof LayoutCreateRouteRouteWithChildren
+  '/api/feed': typeof ApiFeedRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_layout/create': typeof LayoutCreateRouteRouteWithChildren
+  '/api/feed': typeof ApiFeedRouteRoute
   '/_layout/my-videos': typeof LayoutMyVideosRoute
   '/_layout/templates': typeof LayoutTemplatesRoute
   '/_layout/upload': typeof LayoutUploadRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/create'
+    | '/api/feed'
     | '/my-videos'
     | '/templates'
     | '/upload'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/create'
+    | '/api/feed'
     | '/my-videos'
     | '/templates'
     | '/upload'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_layout/create'
+    | '/api/feed'
     | '/_layout/my-videos'
     | '/_layout/templates'
     | '/_layout/upload'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiFeedRouteRoute: typeof ApiFeedRouteRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -239,6 +252,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/my-videos'
       preLoaderRoute: typeof LayoutMyVideosRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/api/feed': {
+      id: '/api/feed'
+      path: '/api/feed'
+      fullPath: '/api/feed'
+      preLoaderRoute: typeof ApiFeedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/create': {
       id: '/_layout/create'
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiFeedRouteRoute: ApiFeedRouteRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
