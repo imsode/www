@@ -15,6 +15,7 @@ import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
 import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
 import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
 import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/route'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as LayoutCreateTemplateRouteRouteImport } from './routes/_layout.create/template/route'
 import { Route as LayoutCreateGeneratingRouteRouteImport } from './routes/_layout.create/generating/route'
 import { Route as LayoutCreateCompletedRouteRouteImport } from './routes/_layout.create/completed/route'
@@ -48,6 +49,11 @@ const LayoutCreateRouteRoute = LayoutCreateRouteRouteImport.update({
   id: '/create',
   path: '/create',
   getParentRoute: () => LayoutRoute,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LayoutCreateTemplateRouteRoute =
   LayoutCreateTemplateRouteRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/create': typeof LayoutCreateRouteRouteWithChildren
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/_layout/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/_layout/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/_layout/create/template': typeof LayoutCreateTemplateRouteRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/create'
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/_layout'
@@ -144,10 +155,12 @@ export interface FileRouteTypes {
     | '/_layout/create/completed'
     | '/_layout/create/generating'
     | '/_layout/create/template'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/create'
       preLoaderRoute: typeof LayoutCreateRouteRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_layout/create/template': {
       id: '/_layout/create/template'
@@ -263,6 +283,7 @@ const LayoutRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
