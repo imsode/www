@@ -10,7 +10,7 @@
 		"jsxImportSource": "hono/jsx",
 		"outDir": "./dist"
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "drizzle.config.ts"],
 	"imports": {
 		"#*": "./src/*"
 	}

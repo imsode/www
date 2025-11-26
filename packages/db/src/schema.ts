@@ -187,11 +187,9 @@ export const characters = pgTable(
 		imageKey: text("image_key").notNull(),
 		thumbnailKey: text("thumbnail_key"),
 		type: text("type", {
-			enum: ["USER_SELFIE", "VIRTUAL", "CELEBRITY", "CUSTOM"],
+			enum: ["USER_SELFIE", "VIRTUAL"],
 		}).notNull(),
 		category: text("category"), // For virtual characters: "Female", "Male", etc.
-		isActive: boolean("is_active").default(true).notNull(),
-		isPremium: boolean("is_premium").default(false).notNull(),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()
 			.notNull(),
