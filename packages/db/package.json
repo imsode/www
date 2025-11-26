@@ -3,11 +3,11 @@
 	"exports": {
 		"./client": {
 			"types": "./src/client.ts",
-			"default": "./dist/client.js"
+			"default": "./dist/src/client.js"
 		},
 		"./schema": {
 			"types": "./src/schema.ts",
-			"default": "./dist/schema.js"
+			"default": "./dist/src/schema.js"
 		}
 	},
 	"scripts": {
