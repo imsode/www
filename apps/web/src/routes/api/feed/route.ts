@@ -60,7 +60,7 @@ const MOCK_VIDEOS: FeedVideo[] = [
 		thumbnail:
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/c5624ba8ba8dadb2f50a5d4e09a07489/thumbnails/thumbnail.jpg",
 		videoUrl:
-			"https://videos.pexels.com/video-files/6893205/6893205-hd_1080_1920_25fps.mp4",
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/c5624ba8ba8dadb2f50a5d4e09a07489/manifest/video.m3u8",
 		tags: ["travel", "greece", "sunset"],
 	},
 	{

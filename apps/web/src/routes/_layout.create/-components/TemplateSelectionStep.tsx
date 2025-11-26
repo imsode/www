@@ -1,11 +1,8 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowRight, Check, ChevronLeft, Play, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-} from "@/components/ui/carousel";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { cn } from "@/lib/utils";
 import type { Template } from "../-types";
 
@@ -18,7 +15,7 @@ interface TemplateSelectionStepProps {
 	onCancel?: () => void;
 }
 
-interface MobileTemplateCarouselProps {
+interface MobileTemplateFeedProps {
 	templates: Template[];
 	onSelect: (id: string) => void;
 	onNext: (templateId?: string) => void;
@@ -39,82 +36,208 @@ const TemplateTags = ({ tags }: { tags: string[] }) => (
 	</div>
 );
 
-const MobileTemplateCarousel = ({
+const MobileTemplateFeed = ({
 	templates,
 	onSelect,
 	onNext,
 	onBack,
 	onCancel,
-}: MobileTemplateCarouselProps) => (
-	<div className="block sm:hidden flex-1 relative">
-		{onBack && (
-			<button
-				type="button"
-				onClick={onBack}
-				className="absolute top-4 left-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
-				aria-label="Go back"
+}: MobileTemplateFeedProps) => {
+	const parentRef = useRef<HTMLDivElement | null>(null);
+	const [activeIndex, setActiveIndex] = useState(0);
+
+	// Clamp activeIndex when templates array length changes
+	useEffect(() => {
+		// Use functional update to read current activeIndex without adding it as dependency
+		setActiveIndex((prev) => {
+			if (templates.length > 0 && prev >= templates.length) {
+				return templates.length - 1;
+			}
+			return prev;
+		});
+	}, [templates.length]);
+
+	// Initial estimate using window height
+	const [rowHeight, setRowHeight] = useState(() => {
+		if (typeof window !== "undefined") {
+			return window.innerHeight;
+		}
+		return 800;
+	});
+
+	// Measure the actual container height
+	useEffect(() => {
+		const parent = parentRef.current;
+		if (!parent) return;
+
+		const observer = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				const { height } = entry.contentRect;
+				setRowHeight((prev) => (Math.abs(prev - height) > 1 ? height : prev));
+			}
+		});
+
+		observer.observe(parent);
+		return () => observer.disconnect();
+	}, []);
+
+	const virtualizer = useVirtualizer({
+		count: templates.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: () => rowHeight,
+		overscan: 1,
+	});
+
+	// Detect active template based on scroll position
+	// Note: virtualizer.scrollOffset triggers re-renders when scroll changes
+	const scrollOffset = virtualizer.scrollOffset ?? 0;
+	useEffect(() => {
+		if (!templates.length) return;
+
+		// Get virtualItems inside effect to avoid stale reference issues
+		const items = virtualizer.getVirtualItems();
+		if (!items.length) return;
+
+		const viewportSize = parentRef.current?.clientHeight || 0;
+		const center = scrollOffset + viewportSize / 2;
+
+		let centeredIndex: number | null = null;
+		for (const item of items) {
+			if (center >= item.start && center < item.end) {
+				centeredIndex = item.index;
+				break;
+			}
+		}
+
+		if (centeredIndex != null && centeredIndex < templates.length) {
+			setActiveIndex((prev) => (prev !== centeredIndex ? centeredIndex : prev));
+		}
+	}, [scrollOffset, templates.length, virtualizer]);
+
+	// Get virtualItems for rendering (this is fine outside useEffect)
+	const virtualItems = virtualizer.getVirtualItems();
+
+	if (!templates.length) {
+		return (
+			<div className="flex w-full h-full items-center justify-center bg-black text-white">
+				<p className="text-sm font-semibold text-white/60">
+					No templates available.
+				</p>
+			</div>
+		);
+	}
+
+	return (
+		<div className="block sm:hidden flex-1 relative h-full">
+			{onBack && (
+				<button
+					type="button"
+					onClick={onBack}
+					className="absolute top-4 left-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
+					aria-label="Go back"
+				>
+					<ChevronLeft className="w-6 h-6" />
+				</button>
+			)}
+			{onCancel && (
+				<button
+					type="button"
+					onClick={onCancel}
+					className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
+					aria-label="Cancel"
+				>
+					<X className="w-6 h-6" />
+				</button>
+			)}
+
+			<div
+				ref={parentRef}
+				className="relative w-full h-full overflow-y-auto bg-black snap-y snap-mandatory scrollbar-hide"
 			>
-				<ChevronLeft className="w-6 h-6" />
-			</button>
-		)}
-		{onCancel && (
-			<button
-				type="button"
-				onClick={onCancel}
-				className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg active:scale-95 transition-all"
-				aria-label="Cancel"
-			>
-				<X className="w-6 h-6" />
-			</button>
-		)}
-		<Carousel
-			orientation="vertical"
-			className="w-full h-full"
-			opts={{ align: "start", loop: true }}
-		>
-			<CarouselContent className="h-[100dvh] mt-0">
-				{templates.map((template) => (
-					<CarouselItem key={template.id} className="h-full pt-0">
-						<div className="relative w-full h-full bg-black">
-							<video
-								src={template.videoUrl}
-								poster={template.image}
-								autoPlay
-								muted
-								loop
-								playsInline
-								className="absolute inset-0 w-full h-full object-cover opacity-80"
-							/>
-							<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 flex flex-col justify-end p-6 pb-24">
-								<h3 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
-									{template.name}
-								</h3>
-								<TemplateTags tags={template.tags} />
-								<p className="text-white/80 mb-4">{template.description}</p>
-								<div className="text-white/60 text-sm">
-									Requires: {template.roles.join(", ")}
+				<div
+					style={{
+						height: virtualizer.getTotalSize(),
+						width: "100%",
+						position: "relative",
+					}}
+				>
+					{virtualItems.map((virtualRow) => {
+						const template = templates[virtualRow.index];
+						if (!template) return null;
+
+						const isActive = virtualRow.index === activeIndex;
+						// Only mount VideoPlayer for items near the active index
+						const isNearActive = Math.abs(virtualRow.index - activeIndex) <= 1;
+
+						return (
+							<div
+								key={virtualRow.key}
+								data-index={virtualRow.index}
+								ref={virtualizer.measureElement}
+								className="snap-start snap-always"
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: `${rowHeight}px`,
+									transform: `translateY(${virtualRow.start}px)`,
+								}}
+							>
+								<div className="relative w-full h-full bg-black">
+									{isNearActive ? (
+										<VideoPlayer
+											src={template.videoUrl}
+											poster={template.image}
+											isActive={isActive}
+											className="absolute inset-0 w-full h-full object-cover opacity-80"
+										/>
+									) : (
+										<img
+											src={template.image}
+											alt={template.name}
+											className="absolute inset-0 w-full h-full object-cover opacity-80"
+										/>
+									)}
+
+									{/* Gradient overlay */}
+									<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 pointer-events-none" />
+
+									{/* Template Info */}
+									<div className="absolute inset-0 flex flex-col justify-end p-6 pb-24 pointer-events-none">
+										<h3 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
+											{template.name}
+										</h3>
+										<TemplateTags tags={template.tags} />
+										<p className="text-white/80 mb-4">{template.description}</p>
+										<div className="text-white/60 text-sm">
+											Requires: {template.roles.join(", ")}
+										</div>
+									</div>
+
+									{/* Action Button */}
+									<div className="absolute bottom-6 left-6 right-6">
+										<Button
+											type="button"
+											onClick={() => {
+												onSelect(template.id);
+												onNext(template.id);
+											}}
+											className="w-full rounded-full bg-white text-black hover:bg-white/90"
+											size="lg"
+										>
+											Use This Template
+										</Button>
+									</div>
 								</div>
 							</div>
-							<div className="absolute bottom-6 left-6 right-6">
-								<Button
-									type="button"
-									onClick={() => {
-										onSelect(template.id);
-										onNext(template.id);
-									}}
-									className="w-full rounded-full bg-white text-black hover:bg-white/90"
-									size="lg"
-								>
-									Use This Template
-								</Button>
-							</div>
-						</div>
-					</CarouselItem>
-				))}
-			</CarouselContent>
-		</Carousel>
-	</div>
-);
+						);
+					})}
+				</div>
+			</div>
+		</div>
+	);
+};
 
 interface TemplateCardProps {
 	template: Template;
@@ -129,35 +252,13 @@ const TemplateCard = ({
 	onSelect,
 	onHover,
 }: TemplateCardProps) => {
-	const videoRef = useRef<HTMLVideoElement>(null);
-	const [isHovered, setIsHovered] = useState(false);
-
-	useEffect(() => {
-		if (isHovered) {
-			videoRef.current?.play().catch(() => {
-				// Ignore autoplay errors
-			});
-			onHover?.(template.id);
-		} else {
-			videoRef.current?.pause();
-			if (videoRef.current) {
-				videoRef.current.currentTime = 0;
-			}
-		}
-	}, [isHovered, template.id, onHover]);
-
+	// Cards show poster only - video plays in the stage preview on hover
 	return (
 		<button
 			type="button"
 			onClick={() => onSelect(template.id)}
-			onMouseEnter={() => {
-				setIsHovered(true);
-				onHover?.(template.id);
-			}}
-			onMouseLeave={() => {
-				setIsHovered(false);
-				onHover?.(null);
-			}}
+			onMouseEnter={() => onHover?.(template.id)}
+			onMouseLeave={() => onHover?.(null)}
 			className={cn(
 				"group relative w-full aspect-[9/16] rounded-xl overflow-hidden border-2 text-left transition-all",
 				isSelected
@@ -169,21 +270,7 @@ const TemplateCard = ({
 			<img
 				src={template.image}
 				alt={template.name}
-				className={cn(
-					"absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
-					isHovered ? "opacity-0" : "opacity-100",
-				)}
-			/>
-			<video
-				ref={videoRef}
-				src={template.videoUrl}
-				muted
-				loop
-				playsInline
-				className={cn(
-					"absolute inset-0 w-full h-full object-cover transition-opacity duration-300",
-					isHovered ? "opacity-100" : "opacity-0",
-				)}
+				className="absolute inset-0 w-full h-full object-cover"
 			/>
 			<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 transition-opacity" />
 
@@ -235,6 +322,27 @@ export function TemplateSelectionStep({
 	const [hoveredTemplateId, setHoveredTemplateId] = useState<string | null>(
 		null,
 	);
+	const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Debounced hover handler to prevent rapid source changes from breaking Vidstack
+	const handleHover = (templateId: string | null) => {
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current);
+		}
+		// Small delay to debounce rapid hover changes
+		hoverTimeoutRef.current = setTimeout(() => {
+			setHoveredTemplateId(templateId);
+		}, 50);
+	};
+
+	// Cleanup timeout on unmount
+	useEffect(() => {
+		return () => {
+			if (hoverTimeoutRef.current) {
+				clearTimeout(hoverTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	// Determine which template to show in the large preview
 	const activeTemplateId =
@@ -243,9 +351,9 @@ export function TemplateSelectionStep({
 
 	return (
 		<div className="h-screen flex flex-col bg-black overflow-hidden relative">
-			{/* Mobile View: Full Screen Vertical Carousel */}
+			{/* Mobile View: Full Screen Vertical Feed */}
 			<div className="lg:hidden w-full h-full">
-				<MobileTemplateCarousel
+				<MobileTemplateFeed
 					templates={templates}
 					onSelect={onSelect}
 					onNext={onNext}
@@ -260,14 +368,11 @@ export function TemplateSelectionStep({
 				<div className="flex-1 h-full flex items-center justify-center pr-[420px] relative">
 					{activeTemplate && (
 						<div className="relative h-full p-4 aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950">
-							<video
-								key={activeTemplate.id}
+							{/* No key prop - let Vidstack handle source changes internally to avoid unmount/mount race conditions */}
+							<VideoPlayer
 								src={activeTemplate.videoUrl}
 								poster={activeTemplate.image}
-								autoPlay
-								muted
-								loop
-								playsInline
+								isActive={true}
 								className="w-full h-full object-cover"
 							/>
 							{/* Cinematic Info Overlay */}
@@ -300,7 +405,7 @@ export function TemplateSelectionStep({
 										template={template}
 										onSelect={onSelect}
 										isSelected={selectedTemplateId === template.id}
-										onHover={setHoveredTemplateId}
+										onHover={handleHover}
 									/>
 								</div>
 							))}
