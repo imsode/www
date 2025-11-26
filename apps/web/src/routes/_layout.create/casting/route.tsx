@@ -20,7 +20,6 @@ async function startVideoGeneration(
 		([roleId, characterId]) => ({ roleId, characterId }),
 	);
 
-	console.log({ templateId: input.templateId, assignments });
 	const response = await fetch("/api/generations", {
 		method: "POST",
 		headers: {
@@ -31,11 +30,9 @@ async function startVideoGeneration(
 			assignments,
 		}),
 	});
-	console.log({ response });
 
 	if (!response.ok) {
 		const error = await response.json();
-		console.error({ error });
 		throw new Error(
 			(error as { error: string }).error || "Failed to start video generation",
 		);

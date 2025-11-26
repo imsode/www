@@ -26,6 +26,7 @@ export const Route = createFileRoute("/api/generations")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				console.log("POST /api/generations");
 				// 1. Authenticate user
 				const session = await auth(env).api.getSession({
 					headers: request.headers,
