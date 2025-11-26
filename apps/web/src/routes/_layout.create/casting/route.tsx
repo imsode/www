@@ -3,8 +3,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
+import type { Character } from "@/routes/api/characters/route";
+import type { Template } from "@/routes/api/templates/route";
 import { CastingStep } from "../-components/CastingStep";
-import { MOCK_CHARACTERS, TEMPLATES } from "../-constants";
 
 type StartGenerationInput = {
 	assignments: Record<string, string>;
@@ -23,8 +24,32 @@ const castingSearchSchema = z.object({
 	templateId: z.string(),
 });
 
+async function fetchCastingData(
+	templateId: string,
+): Promise<{ template: Template | null; characters: Character[] }> {
+	const [templatesRes, charactersRes] = await Promise.all([
+		fetch("/api/templates"),
+		fetch("/api/characters"),
+	]);
+
+	if (!templatesRes.ok || !charactersRes.ok) {
+		throw new Error("Failed to fetch casting data");
+	}
+
+	const templatesData: { templates: Template[] } = await templatesRes.json();
+	const charactersData: { characters: Character[] } =
+		await charactersRes.json();
+
+	return {
+		template: templatesData.templates.find((t) => t.id === templateId) ?? null,
+		characters: charactersData.characters,
+	};
+}
+
 export const Route = createFileRoute("/_layout/create/casting")({
 	validateSearch: (search) => castingSearchSchema.parse(search),
+	loaderDeps: ({ search }) => ({ templateId: search.templateId }),
+	loader: ({ deps }) => fetchCastingData(deps.templateId),
 	component: CastingPage,
 });
 
@@ -33,7 +58,7 @@ function CastingPage() {
 	const search = Route.useSearch();
 	const [assignments, setAssignments] = useState<Record<string, string>>({});
 
-	const template = TEMPLATES.find((t) => t.id === search.templateId);
+	const { template, characters } = Route.useLoaderData();
 
 	const startMutation = useMutation({
 		mutationFn: startVideoGeneration,
@@ -66,7 +91,7 @@ function CastingPage() {
 	return (
 		<CastingStep
 			template={template}
-			characters={MOCK_CHARACTERS}
+			characters={characters}
 			assignments={assignments}
 			onAssign={(role, charId) =>
 				setAssignments((prev) => ({ ...prev, [role]: charId }))
