@@ -50,6 +50,7 @@
 		"@tanstack/react-virtual": "^3.13.12",
 		"@tanstack/router-plugin": "^1.132.0",
 		"@vidstack/react": "^1.12.13",
+		"@repo/db": "workspace:*",
 		"better-auth": "^1.4.1",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",

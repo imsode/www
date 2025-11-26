@@ -1,7 +1,7 @@
+import { createDb } from "@repo/db/client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { createDb } from "@/db/client";
 import { betterAuthOptions } from "./options";
 
 // Create database connection for auth
