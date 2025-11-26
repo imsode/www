@@ -35,14 +35,6 @@ jobs:
         # apps/api and apps/video-generation-queue-consumer are deployed from source via Wrangler.
         run: pnpm turbo run build
 
-      - name: Deploy API
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/api
-          command: deploy --minify
-
       - name: Deploy Consumer
         uses: cloudflare/wrangler-action@v3
         with:
