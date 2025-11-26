@@ -211,7 +211,7 @@ const MobileTemplateFeed = ({
 										<TemplateTags tags={template.tags} />
 										<p className="text-white/80 mb-4">{template.description}</p>
 										<div className="text-white/60 text-sm">
-											Requires: {template.roles.join(", ")}
+											Requires: {template.roles.map((r) => r.name).join(", ")}
 										</div>
 									</div>
 
