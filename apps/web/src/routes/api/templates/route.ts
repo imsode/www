@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import type { Template } from "@/routes/_layout.create/-types";
+import type { Template, TemplateRole } from "@/routes/_layout.create/-types";
 
-export type { Template };
+export type { Template, TemplateRole };
 
 // Mock data - In production, fetch from database
 const MOCK_TEMPLATES: Template[] = [
@@ -14,7 +14,10 @@ const MOCK_TEMPLATES: Template[] = [
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/manifest/video.m3u8",
-		roles: ["Hero", "Partner"],
+		roles: [
+			{ id: "role-1-hero", name: "Hero" },
+			{ id: "role-1-partner", name: "Partner" },
+		],
 		tags: ["Romance", "12s"],
 	},
 	{
@@ -25,7 +28,7 @@ const MOCK_TEMPLATES: Template[] = [
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/manifest/video.m3u8",
-		roles: ["Traveler"],
+		roles: [{ id: "role-2-traveler", name: "Traveler" }],
 		tags: ["Travel", "15s"],
 	},
 	{
@@ -36,7 +39,7 @@ const MOCK_TEMPLATES: Template[] = [
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/manifest/video.m3u8",
-		roles: ["Host"],
+		roles: [{ id: "role-3-host", name: "Host" }],
 		tags: ["Lifestyle", "30s"],
 	},
 	{
@@ -47,7 +50,10 @@ const MOCK_TEMPLATES: Template[] = [
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/thumbnails/thumbnail.jpg",
 		videoUrl:
 			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/manifest/video.m3u8",
-		roles: ["Hacker", "Target"],
+		roles: [
+			{ id: "role-4-hacker", name: "Hacker" },
+			{ id: "role-4-target", name: "Target" },
+		],
 		tags: ["Sci-Fi", "10s"],
 	},
 ];
@@ -61,4 +67,3 @@ export const Route = createFileRoute("/api/templates")({
 		},
 	},
 });
-

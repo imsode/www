@@ -5,12 +5,17 @@ export interface Character {
 	isUser?: boolean;
 }
 
+export interface TemplateRole {
+	id: string;
+	name: string;
+}
+
 export interface Template {
 	id: string;
 	name: string;
 	description: string;
 	image: string;
 	videoUrl: string;
-	roles: string[]; // e.g. ["Hero", "Partner"]
+	roles: TemplateRole[];
 	tags: string[];
 }

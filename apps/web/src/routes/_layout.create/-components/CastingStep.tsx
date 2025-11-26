@@ -22,8 +22,8 @@ import type { Character, Template } from "../-types";
 interface CastingStepProps {
 	template: Template;
 	characters: Character[];
-	assignments: Record<string, string>;
-	onAssign: (role: string, charId: string) => void;
+	assignments: Record<string, string>; // roleId -> characterId
+	onAssign: (roleId: string, charId: string) => void;
 	onGenerate: () => void;
 	onBack?: () => void;
 	onCancel?: () => void;
@@ -79,14 +79,15 @@ export function CastingStep({
 	onCancel,
 	isGenerating,
 }: CastingStepProps) {
-	const [activeRole, setActiveRole] = useState<string | null>(null);
-	const isComplete = template.roles.every((role) => assignments[role]);
+	const [activeRoleId, setActiveRoleId] = useState<string | null>(null);
+	const activeRole = template.roles.find((r) => r.id === activeRoleId);
+	const isComplete = template.roles.every((role) => assignments[role.id]);
 	const isMobile = useIsMobile();
 
 	const handleCharacterSelect = (charId: string) => {
-		if (activeRole) {
-			onAssign(activeRole, charId);
-			setActiveRole(null);
+		if (activeRoleId) {
+			onAssign(activeRoleId, charId);
+			setActiveRoleId(null);
 		}
 	};
 
@@ -95,13 +96,13 @@ export function CastingStep({
 			{/* Character Picker */}
 			{isMobile ? (
 				<Drawer
-					open={!!activeRole}
-					onOpenChange={(open) => !open && setActiveRole(null)}
+					open={!!activeRoleId}
+					onOpenChange={(open) => !open && setActiveRoleId(null)}
 				>
 					<DrawerContent className="bg-zinc-950 border-zinc-800">
 						<DrawerHeader>
 							<DrawerTitle className="text-white text-center">
-								Select {activeRole}
+								Select {activeRole?.name}
 							</DrawerTitle>
 						</DrawerHeader>
 						<div className="p-4 max-h-[70vh] overflow-y-auto">
@@ -114,13 +115,13 @@ export function CastingStep({
 				</Drawer>
 			) : (
 				<Dialog
-					open={!!activeRole}
-					onOpenChange={(open) => !open && setActiveRole(null)}
+					open={!!activeRoleId}
+					onOpenChange={(open) => !open && setActiveRoleId(null)}
 				>
 					<DialogContent className="bg-zinc-950 border-zinc-800 text-white sm:max-w-3xl">
 						<DialogHeader>
 							<DialogTitle className="text-white text-center">
-								Select {activeRole}
+								Select {activeRole?.name}
 							</DialogTitle>
 						</DialogHeader>
 						<div className="p-4 max-h-[70vh] overflow-y-auto">
@@ -173,19 +174,19 @@ export function CastingStep({
 
 							<div className="space-y-4">
 								{template.roles.map((role) => {
-									const assignedId = assignments[role];
+									const assignedId = assignments[role.id];
 									const assignedChar = characters.find(
 										(c) => c.id === assignedId,
 									);
 
 									return (
-										<div key={role} className="space-y-2">
+										<div key={role.id} className="space-y-2">
 											<span className="text-sm font-semibold text-zinc-300 block uppercase tracking-wide">
-												{role}
+												{role.name}
 											</span>
 											<button
 												type="button"
-												onClick={() => setActiveRole(role)}
+												onClick={() => setActiveRoleId(role.id)}
 												className={cn(
 													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-950 group hover:bg-zinc-900",
 													assignedChar
@@ -322,26 +323,26 @@ export function CastingStep({
 							<div className="flex items-center justify-between">
 								<h3 className="text-lg font-bold text-white">Cast Roles</h3>
 								<span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">
-									{template.roles.filter((r) => assignments[r]).length} /{" "}
+									{template.roles.filter((r) => assignments[r.id]).length} /{" "}
 									{template.roles.length} Ready
 								</span>
 							</div>
 
 							<div className="space-y-3">
 								{template.roles.map((role) => {
-									const assignedId = assignments[role];
+									const assignedId = assignments[role.id];
 									const assignedChar = characters.find(
 										(c) => c.id === assignedId,
 									);
 
 									return (
-										<div key={role} className="space-y-1.5">
+										<div key={role.id} className="space-y-1.5">
 											<span className="text-xs font-semibold text-zinc-400 uppercase tracking-wide ml-1">
-												{role}
+												{role.name}
 											</span>
 											<button
 												type="button"
-												onClick={() => setActiveRole(role)}
+												onClick={() => setActiveRoleId(role.id)}
 												className={cn(
 													"w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 relative overflow-hidden",
 													assignedChar

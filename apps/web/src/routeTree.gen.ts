@@ -17,6 +17,7 @@ import { Route as LayoutUploadRouteImport } from './routes/_layout.upload'
 import { Route as LayoutTemplatesRouteImport } from './routes/_layout.templates'
 import { Route as LayoutMyVideosRouteImport } from './routes/_layout.my-videos'
 import { Route as ApiTemplatesRouteRouteImport } from './routes/api/templates/route'
+import { Route as ApiGenerationsRouteRouteImport } from './routes/api/generations/route'
 import { Route as ApiFeedRouteRouteImport } from './routes/api/feed/route'
 import { Route as ApiCharactersRouteRouteImport } from './routes/api/characters/route'
 import { Route as LayoutCreateRouteRouteImport } from './routes/_layout.create/route'
@@ -63,6 +64,11 @@ const LayoutMyVideosRoute = LayoutMyVideosRouteImport.update({
 const ApiTemplatesRouteRoute = ApiTemplatesRouteRouteImport.update({
   id: '/api/templates',
   path: '/api/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerationsRouteRoute = ApiGenerationsRouteRouteImport.update({
+  id: '/api/generations',
+  path: '/api/generations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFeedRouteRoute = ApiFeedRouteRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof LayoutCreateRouteRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteRoute
   '/api/feed': typeof ApiFeedRouteRoute
+  '/api/generations': typeof ApiGenerationsRouteRoute
   '/api/templates': typeof ApiTemplatesRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/create': typeof LayoutCreateRouteRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteRoute
   '/api/feed': typeof ApiFeedRouteRoute
+  '/api/generations': typeof ApiGenerationsRouteRoute
   '/api/templates': typeof ApiTemplatesRouteRoute
   '/my-videos': typeof LayoutMyVideosRoute
   '/templates': typeof LayoutTemplatesRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_layout/create': typeof LayoutCreateRouteRouteWithChildren
   '/api/characters': typeof ApiCharactersRouteRoute
   '/api/feed': typeof ApiFeedRouteRoute
+  '/api/generations': typeof ApiGenerationsRouteRoute
   '/api/templates': typeof ApiTemplatesRouteRoute
   '/_layout/my-videos': typeof LayoutMyVideosRoute
   '/_layout/templates': typeof LayoutTemplatesRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/api/characters'
     | '/api/feed'
+    | '/api/generations'
     | '/api/templates'
     | '/my-videos'
     | '/templates'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/create'
     | '/api/characters'
     | '/api/feed'
+    | '/api/generations'
     | '/api/templates'
     | '/my-videos'
     | '/templates'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/_layout/create'
     | '/api/characters'
     | '/api/feed'
+    | '/api/generations'
     | '/api/templates'
     | '/_layout/my-videos'
     | '/_layout/templates'
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiCharactersRouteRoute: typeof ApiCharactersRouteRoute
   ApiFeedRouteRoute: typeof ApiFeedRouteRoute
+  ApiGenerationsRouteRoute: typeof ApiGenerationsRouteRoute
   ApiTemplatesRouteRoute: typeof ApiTemplatesRouteRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/api/templates'
       fullPath: '/api/templates'
       preLoaderRoute: typeof ApiTemplatesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generations': {
+      id: '/api/generations'
+      path: '/api/generations'
+      fullPath: '/api/generations'
+      preLoaderRoute: typeof ApiGenerationsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/feed': {
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiCharactersRouteRoute: ApiCharactersRouteRoute,
   ApiFeedRouteRoute: ApiFeedRouteRoute,
+  ApiGenerationsRouteRoute: ApiGenerationsRouteRoute,
   ApiTemplatesRouteRoute: ApiTemplatesRouteRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

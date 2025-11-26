@@ -1,24 +1,45 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
 import type { Character } from "@/routes/api/characters/route";
+import type { StartGenerationResponse } from "@/routes/api/generations/route";
 import type { Template } from "@/routes/api/templates/route";
 import { CastingStep } from "../-components/CastingStep";
 
 type StartGenerationInput = {
-	assignments: Record<string, string>;
 	templateId: string;
+	assignments: Record<string, string>; // roleId -> characterId
 };
 
-export const startVideoGeneration = createServerFn({ method: "POST" })
-	.inputValidator((data: StartGenerationInput) => data)
-	.handler(async ({ data }) => {
-		console.log("Starting generation with", data);
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		return { jobId: Math.random().toString(36).substring(7) };
+async function startVideoGeneration(
+	input: StartGenerationInput,
+): Promise<StartGenerationResponse> {
+	// Convert Record to array format expected by the API
+	const assignments = Object.entries(input.assignments).map(
+		([roleId, characterId]) => ({ roleId, characterId }),
+	);
+
+	const response = await fetch("/api/generations", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			templateId: input.templateId,
+			assignments,
+		}),
 	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(
+			(error as { error: string }).error || "Failed to start video generation",
+		);
+	}
+
+	return response.json();
+}
 
 const castingSearchSchema = z.object({
 	templateId: z.string(),
@@ -61,7 +82,7 @@ function CastingPage() {
 	const { template, characters } = Route.useLoaderData();
 
 	const startMutation = useMutation({
-		mutationFn: startVideoGeneration,
+		mutationFn: (input: StartGenerationInput) => startVideoGeneration(input),
 		onSuccess: (data) => {
 			navigate({
 				to: "/create/generating",
@@ -75,7 +96,8 @@ function CastingPage() {
 	const handleGenerate = () => {
 		if (search.templateId && Object.keys(assignments).length > 0) {
 			startMutation.mutate({
-				data: { assignments, templateId: search.templateId },
+				templateId: search.templateId,
+				assignments, // Record<roleId, characterId>
 			});
 		}
 	};
@@ -93,8 +115,8 @@ function CastingPage() {
 			template={template}
 			characters={characters}
 			assignments={assignments}
-			onAssign={(role, charId) =>
-				setAssignments((prev) => ({ ...prev, [role]: charId }))
+			onAssign={(roleId, charId) =>
+				setAssignments((prev) => ({ ...prev, [roleId]: charId }))
 			}
 			onGenerate={handleGenerate}
 			onBack={handleBack}
