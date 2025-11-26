@@ -33,6 +33,7 @@ export const Route = createFileRoute("/api/generations")({
 				});
 
 				if (!session?.user) {
+					console.error("Unauthorized");
 					return json({ error: "Unauthorized" }, { status: 401 });
 				}
 
@@ -43,12 +44,14 @@ export const Route = createFileRoute("/api/generations")({
 				try {
 					body = await request.json();
 				} catch {
+					console.error("Invalid JSON body");
 					return json({ error: "Invalid JSON body" }, { status: 400 });
 				}
 
 				const { templateId, assignments } = body;
 
 				if (!templateId) {
+					console.error("templateId is required");
 					return json({ error: "templateId is required" }, { status: 400 });
 				}
 
@@ -57,6 +60,7 @@ export const Route = createFileRoute("/api/generations")({
 					!Array.isArray(assignments) ||
 					assignments.length === 0
 				) {
+					console.error("At least one role assignment is required");
 					return json(
 						{ error: "At least one role assignment is required" },
 						{ status: 400 },
@@ -66,6 +70,7 @@ export const Route = createFileRoute("/api/generations")({
 				// Validate assignment structure
 				for (const assignment of assignments) {
 					if (!assignment.roleId || !assignment.characterId) {
+						console.error("Each assignment must have roleId and characterId");
 						return json(
 							{ error: "Each assignment must have roleId and characterId" },
 							{ status: 400 },
@@ -73,40 +78,49 @@ export const Route = createFileRoute("/api/generations")({
 					}
 				}
 
-				// 3. Create database connection
-				const db = createDb(env.HYPERDRIVE.connectionString);
+				try {
+					// 3. Create database connection
+					const db = createDb(env.HYPERDRIVE.connectionString);
 
-				// 4. Create generation record
-				const [generation] = await db
-					.insert(generations)
-					.values({
-						userId,
-						templateId,
-						status: "PENDING",
-					})
-					.returning({ id: generations.id });
+					// 4. Create generation record
+					const [generation] = await db
+						.insert(generations)
+						.values({
+							userId,
+							templateId,
+							status: "PENDING",
+						})
+						.returning({ id: generations.id });
 
-				const jobId = generation.id;
+					const jobId = generation.id;
 
-				// 5. Create casting records for each assignment
-				const castingValues = assignments.map(({ roleId, characterId }) => ({
-					generationId: jobId,
-					roleId,
-					characterId,
-				}));
+					// 5. Create casting records for each assignment
+					const castingValues = assignments.map(({ roleId, characterId }) => ({
+						generationId: jobId,
+						roleId,
+						characterId,
+					}));
 
-				await db.insert(generationCastings).values(castingValues);
+					await db.insert(generationCastings).values(castingValues);
 
-				// 6. Send job to the video generation queue
-				await env.VIDEO_GENERATION_QUEUE.send({ jobId });
+					// 6. Send job to the video generation queue
+					await env.VIDEO_GENERATION_QUEUE.send({ jobId });
 
-				console.log(
-					`Video generation job ${jobId} created and queued for user ${userId}`,
-				);
+					console.log(
+						`Video generation job ${jobId} created and queued for user ${userId}`,
+					);
 
-				// 7. Return the job ID
-				const response: StartGenerationResponse = { jobId };
-				return json(response, { status: 201 });
+					// 7. Return the job ID
+					return json({ jobId } satisfies StartGenerationResponse, {
+						status: 201,
+					});
+				} catch (error) {
+					console.error("Failed to create generation job:", error);
+					return json(
+						{ error: "Failed to start video generation" },
+						{ status: 500 },
+					);
+				}
 			},
 		},
 	},
