@@ -7,7 +7,7 @@ export type { Template, TemplateRole };
 // Mock data - In production, fetch from database
 const MOCK_TEMPLATES: Template[] = [
 	{
-		id: "1",
+		id: "9f3c7b6e-5d7a-4a0f-9e3c-1b0bda2f5c42",
 		name: "Winter Kiss",
 		description: "Romantic winter vibes",
 		image:
@@ -21,7 +21,7 @@ const MOCK_TEMPLATES: Template[] = [
 		tags: ["Romance", "12s"],
 	},
 	{
-		id: "2",
+		id: "3a6d1f92-2d8e-4c51-9a4d-8f5b6c1e7d90",
 		name: "Epic Journey",
 		description: "Travel highlights",
 		image:
@@ -32,7 +32,7 @@ const MOCK_TEMPLATES: Template[] = [
 		tags: ["Travel", "15s"],
 	},
 	{
-		id: "3",
+		id: "b1f84a2c-0c3e-4a0a-8d97-6d2f5e9c44ab",
 		name: "Daily Vlog",
 		description: "Share your day",
 		image:
@@ -43,7 +43,7 @@ const MOCK_TEMPLATES: Template[] = [
 		tags: ["Lifestyle", "30s"],
 	},
 	{
-		id: "4",
+		id: "e7c92b41-8f3d-4c1a-91b5-2a6f0d9c8e73",
 		name: "Cyberpunk",
 		description: "Futuristic aesthetic",
 		image:
