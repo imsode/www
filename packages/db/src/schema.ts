@@ -225,7 +225,7 @@ export const generations = pgTable(
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
 		templateId: uuid("template_id")
-			.references(() => templates.id)
+			.references(() => templates.id, { onDelete: "restrict" })
 			.notNull(),
 		status: text("status", {
 			enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
@@ -257,10 +257,10 @@ export const generationCastings = pgTable(
 			.references(() => generations.id, { onDelete: "cascade" })
 			.notNull(),
 		roleId: uuid("role_id")
-			.references(() => templateRoles.id)
+			.references(() => templateRoles.id, { onDelete: "restrict" })
 			.notNull(),
 		characterId: uuid("character_id")
-			.references(() => characters.id)
+			.references(() => characters.id, { onDelete: "restrict" })
 			.notNull(),
 	},
 	(table) => [
