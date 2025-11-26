@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_layout/")({ component: FeedPage });
 
 function FeedPage() {
 	const [activeVideoIndex, setActiveVideoIndex] = useState(0);
-	const [likedVideos, setLikedVideos] = useState<Set<number>>(new Set());
+	const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
 	const feedRef = useRef<VideoFeedHandle | null>(null);
 
 	const { videos, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -37,7 +37,7 @@ function FeedPage() {
 		}
 	}, [hasNextPage, fetchNextPage]);
 
-	const handleLike = (videoId: number) => {
+	const handleLike = (videoId: string) => {
 		setLikedVideos((prev) => {
 			const next = new Set(prev);
 			if (next.has(videoId)) {

@@ -12,7 +12,9 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"db:push": "drizzle-kit push"
+		"db:push": "drizzle-kit push",
+		"db:seed": "tsx --env-file=.env src/seed.ts",
+		"db:seed:clean": "tsx --env-file=.env src/seed.ts --clean"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.44.7",
@@ -20,6 +22,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^24.10.1",
-		"drizzle-kit": "^0.31.7"
+		"drizzle-kit": "^0.31.7",
+		"tsx": "^4.20.6"
 	}
 }

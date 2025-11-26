@@ -14,7 +14,7 @@ import { VideoPlayer } from "@/components/VideoPlayer";
 import { cn } from "@/lib/utils";
 
 export type FeedVideo = {
-	id: number;
+	id: string;
 	username: string;
 	avatar: string;
 	caption: string;
@@ -35,8 +35,8 @@ export type VerticalVideoFeedProps = {
 	videos: FeedVideo[];
 	activeIndex: number;
 	onActiveIndexChange: (index: number) => void;
-	likedVideos: Set<number>;
-	onLike: (videoId: number) => void;
+	likedVideos: Set<string>;
+	onLike: (videoId: string) => void;
 	onEndReached?: () => void;
 	className?: string;
 };

@@ -1,8 +1,12 @@
+import { env } from "cloudflare:workers";
+import { createDb } from "@repo/db/client";
+import { user, videos, videoTags } from "@repo/db/schema";
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
+import { and, desc, eq, inArray, isNotNull, lt, or } from "drizzle-orm";
 
 export type FeedVideo = {
-	id: number;
+	id: string;
 	username: string;
 	avatar: string;
 	caption: string;
@@ -16,96 +20,142 @@ export type FeedVideo = {
 
 export type FeedPage = {
 	videos: FeedVideo[];
-	nextCursor: number | undefined;
+	nextCursor: string | undefined;
 };
 
-// Mock data - In production, fetch from database
-const MOCK_VIDEOS: FeedVideo[] = [
-	{
-		id: 1,
-		username: "storyteller_jane",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
-		caption: "My journey through the mountains 🏔️ #adventure #nature",
-		likes: 12500,
-		comments: 340,
-		shares: 89,
-		thumbnail:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/041aea9dcec7a96be5dd786080756be9/thumbnails/thumbnail.jpg",
-		videoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/041aea9dcec7a96be5dd786080756be9/manifest/video.m3u8",
-		tags: ["adventure", "nature", "stories"],
-	},
-	{
-		id: 2,
-		username: "creative_mike",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-		caption: "Creating art from everyday moments ✨ #creativity #art",
-		likes: 8900,
-		comments: 210,
-		shares: 45,
-		thumbnail:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/fbf0cf2d02ec5d6df6537cd8917b5abb/thumbnails/thumbnail.jpg",
-		videoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/fbf0cf2d02ec5d6df6537cd8917b5abb/manifest/video.m3u8",
-		tags: ["creativity", "daily", "moments"],
-	},
-	{
-		id: 3,
-		username: "traveler_sarah",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-		caption: "Sunset vibes in Santorini 🌅 #travel #greece",
-		likes: 15200,
-		comments: 456,
-		shares: 120,
-		thumbnail:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/c5624ba8ba8dadb2f50a5d4e09a07489/thumbnails/thumbnail.jpg",
-		videoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/c5624ba8ba8dadb2f50a5d4e09a07489/manifest/video.m3u8",
-		tags: ["travel", "greece", "sunset"],
-	},
-	{
-		id: 4,
-		username: "fitness_alex",
-		avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-		caption: "Morning workout routine 💪 #fitness #motivation",
-		likes: 9800,
-		comments: 189,
-		shares: 67,
-		thumbnail:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/a151644ca41f371d24c5a777b2e0a087/thumbnails/thumbnail.jpg",
-		videoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/a151644ca41f371d24c5a777b2e0a087/manifest/video.m3u8",
-		tags: ["fitness", "workout", "motivation"],
-	},
-];
+// Cursor format: {timestamp}_{id} for stable pagination
+function encodeCursor(publishedAt: Date, id: string): string {
+	return `${publishedAt.getTime()}_${id}`;
+}
 
-const PAGE_SIZE = 3;
+function decodeCursor(
+	cursor: string,
+): { publishedAt: Date; id: string } | null {
+	const [timestampStr, id] = cursor.split("_");
+	const timestamp = Number(timestampStr);
+	if (Number.isNaN(timestamp) || !id) return null;
+	return { publishedAt: new Date(timestamp), id };
+}
+
+const CLOUDFLARE_STREAM_BASE_URL =
+	"https://customer-nmxs5753a01mt0tb.cloudflarestream.com";
+
+const PAGE_SIZE = 10;
 
 export const Route = createFileRoute("/api/feed")({
 	server: {
 		handlers: {
-			GET: ({ request }) => {
+			GET: async ({ request }) => {
+				const db = createDb(env.HYPERDRIVE.connectionString);
 				const url = new URL(request.url);
 				const cursorParam = url.searchParams.get("cursor");
-				const cursor = cursorParam ? parseInt(cursorParam, 10) : 0;
 
-				// For demo: cycle through mock videos to simulate infinite content
-				const startIndex = cursor % MOCK_VIDEOS.length;
-				const videos: FeedVideo[] = [];
+				// Build where conditions
+				// Only show published videos (with a publishedAt date) that are public
+				const conditions = [
+					eq(videos.visibility, "PUBLIC"),
+					isNotNull(videos.publishedAt),
+				];
 
-				for (let i = 0; i < PAGE_SIZE; i++) {
-					const sourceIndex = (startIndex + i) % MOCK_VIDEOS.length;
-					const source = MOCK_VIDEOS[sourceIndex];
-					// Create unique IDs for each "page" of videos
-					videos.push({
-						...source,
-						id: cursor + i + 1,
-					});
+				// Parse cursor and add pagination condition
+				if (cursorParam) {
+					const cursor = decodeCursor(cursorParam);
+					if (cursor) {
+						// Get items where:
+						// - publishedAt < cursor.publishedAt, OR
+						// - publishedAt = cursor.publishedAt AND id < cursor.id
+						const paginationCondition = or(
+							lt(videos.publishedAt, cursor.publishedAt),
+							and(
+								eq(videos.publishedAt, cursor.publishedAt),
+								lt(videos.id, cursor.id),
+							),
+						);
+						if (paginationCondition) {
+							conditions.push(paginationCondition);
+						}
+					}
+				}
+
+				// Query videos with user info, ordered by publishedAt descending
+				const videoResults = await db
+					.select({
+						id: videos.id,
+						userId: videos.userId,
+						caption: videos.caption,
+						videoFileKey: videos.videoFileKey,
+						thumbnailKey: videos.thumbnailKey,
+						likesCount: videos.likesCount,
+						commentsCount: videos.commentsCount,
+						sharesCount: videos.sharesCount,
+						publishedAt: videos.publishedAt,
+						userName: user.name,
+						userImage: user.image,
+					})
+					.from(videos)
+					.innerJoin(user, eq(videos.userId, user.id))
+					.where(and(...conditions))
+					.orderBy(desc(videos.publishedAt), desc(videos.id))
+					.limit(PAGE_SIZE + 1); // Fetch one extra to determine if there's more
+
+				// Check if there are more results
+				const hasMore = videoResults.length > PAGE_SIZE;
+				const videosToReturn = hasMore
+					? videoResults.slice(0, PAGE_SIZE)
+					: videoResults;
+
+				// Fetch tags for all videos in batch
+				const videoIds = videosToReturn.map((v) => v.id);
+				const tagsResults =
+					videoIds.length > 0
+						? await db
+								.select({
+									videoId: videoTags.videoId,
+									tag: videoTags.tag,
+								})
+								.from(videoTags)
+								.where(inArray(videoTags.videoId, videoIds))
+						: [];
+
+				// Group tags by video ID
+				const tagsByVideoId = new Map<string, string[]>();
+				for (const { videoId, tag } of tagsResults) {
+					const existing = tagsByVideoId.get(videoId) || [];
+					existing.push(tag);
+					tagsByVideoId.set(videoId, existing);
+				}
+
+				// Transform to FeedVideo format
+				const feedVideos: FeedVideo[] = videosToReturn.map((video) => ({
+					id: video.id,
+					username: video.userName,
+					avatar:
+						video.userImage ||
+						`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(video.userName)}`,
+					caption: video.caption || "",
+					likes: video.likesCount,
+					comments: video.commentsCount,
+					shares: video.sharesCount,
+					thumbnail: video.thumbnailKey
+						? `${CLOUDFLARE_STREAM_BASE_URL}/${video.thumbnailKey}`
+						: `${CLOUDFLARE_STREAM_BASE_URL}/${video.videoFileKey}/thumbnails/thumbnail.jpg`,
+					videoUrl: `${CLOUDFLARE_STREAM_BASE_URL}/${video.videoFileKey}/manifest/video.m3u8`,
+					tags: tagsByVideoId.get(video.id) || [],
+				}));
+
+				// Build next cursor from the last video
+				// publishedAt is guaranteed non-null by the isNotNull filter in the query
+				let nextCursor: string | undefined;
+				if (hasMore) {
+					const lastVideo = videosToReturn[videosToReturn.length - 1];
+					if (lastVideo?.publishedAt) {
+						nextCursor = encodeCursor(lastVideo.publishedAt, lastVideo.id);
+					}
 				}
 
 				const response: FeedPage = {
-					videos,
-					nextCursor: cursor + PAGE_SIZE,
+					videos: feedVideos,
+					nextCursor,
 				};
 
 				return json(response);

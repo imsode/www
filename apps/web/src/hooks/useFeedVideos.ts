@@ -4,7 +4,7 @@ import type { FeedVideo } from "@/components/VerticalVideoFeed";
 
 type FeedPage = {
 	videos: FeedVideo[];
-	nextCursor: number | undefined;
+	nextCursor: string | undefined;
 };
 
 /**
@@ -13,9 +13,10 @@ type FeedPage = {
 async function fetchFeedVideos({
 	cursor,
 }: {
-	cursor: number;
+	cursor: string | undefined;
 }): Promise<FeedPage> {
-	const response = await fetch(`/api/feed?cursor=${cursor}`);
+	const url = cursor ? `/api/feed?cursor=${cursor}` : "/api/feed";
+	const response = await fetch(url);
 
 	if (!response.ok) {
 		throw new Error(`Failed to fetch feed: ${response.statusText}`);
@@ -28,7 +29,7 @@ export function useFeedVideos() {
 	const query = useInfiniteQuery({
 		queryKey: ["feed-videos"],
 		queryFn: ({ pageParam }) => fetchFeedVideos({ cursor: pageParam }),
-		initialPageParam: 0,
+		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (lastPage) => lastPage.nextCursor,
 	});
 
