@@ -59,9 +59,11 @@ export const VerticalVideoFeed = forwardRef<
 	const parentRef = useRef<HTMLDivElement | null>(null);
 
 	// Initial estimate using window height to reduce initial shift
+	// Account for mobile bottom nav (3.5rem = 56px) on small screens
 	const [rowHeight, setRowHeight] = useState(() => {
 		if (typeof window !== "undefined") {
-			return window.innerHeight;
+			const isMobile = window.innerWidth < 640; // sm breakpoint
+			return window.innerHeight - (isMobile ? 56 : 0);
 		}
 		return 800;
 	});
