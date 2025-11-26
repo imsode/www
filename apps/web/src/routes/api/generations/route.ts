@@ -115,7 +115,12 @@ export const Route = createFileRoute("/api/generations")({
 						status: 201,
 					});
 				} catch (error) {
-					console.error("Failed to create generation job:", error);
+					console.error({
+						message: "Failed to start video generation",
+						errorMessage:
+							error instanceof Error ? error.message : "Unknown error",
+						error,
+					});
 					return json(
 						{ error: "Failed to start video generation" },
 						{ status: 500 },
