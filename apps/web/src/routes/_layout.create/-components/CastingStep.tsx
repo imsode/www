@@ -267,7 +267,7 @@ export function CastingStep({
 			</div>
 
 			{/* Mobile View: Immersive Bottom Sheet Layout */}
-			<div className="lg:hidden flex flex-col w-full h-full relative">
+			<div className="lg:hidden flex flex-col w-full h-[100dvh] relative">
 				{/* 1. Background Video */}
 				<div className="absolute inset-0 z-0 bg-black">
 					<video

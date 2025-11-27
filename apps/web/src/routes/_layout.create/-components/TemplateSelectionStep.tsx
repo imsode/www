@@ -128,7 +128,7 @@ const MobileTemplateFeed = ({
 	}
 
 	return (
-		<div className="block sm:hidden flex-1 relative h-full">
+		<div className="block sm:hidden flex-1 relative h-[100dvh]">
 			{onBack && (
 				<button
 					type="button"
