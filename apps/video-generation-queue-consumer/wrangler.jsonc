@@ -27,6 +27,13 @@
 			}
 		]
 	},
+	"workflows": [
+		{
+			"name": "video-generation-workflow",
+			"binding": "VIDEO_GENERATION_WORKFLOW",
+			"class_name": "VideoGenerationWorkflow"
+		}
+	],
 	"observability": {
 		"enabled": true
 	}
