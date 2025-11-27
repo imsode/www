@@ -62,8 +62,10 @@ const MOCK_TEMPLATES = [
 		name: "Romantic Dance",
 		description:
 			"A beautiful romantic dance sequence with two partners under the moonlight.",
-		previewImageUrl: "https://picsum.photos/seed/romantic/400/600",
-		previewVideoUrl: null,
+		previewImageUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/thumbnails/thumbnail.jpg",
+		previewVideoUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/manifest/video.m3u8",
 		providerModelId: "kling-v1-pro",
 		durationSeconds: 30,
 		roles: [
@@ -76,8 +78,10 @@ const MOCK_TEMPLATES = [
 		name: "Action Hero",
 		description:
 			"An intense action sequence with a hero fighting through obstacles.",
-		previewImageUrl: "https://picsum.photos/seed/action/400/600",
-		previewVideoUrl: null,
+		previewImageUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/thumbnails/thumbnail.jpg",
+		previewVideoUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/manifest/video.m3u8",
 		providerModelId: "kling-v1-pro",
 		durationSeconds: 45,
 		roles: [
@@ -90,8 +94,10 @@ const MOCK_TEMPLATES = [
 		name: "Comedy Duo",
 		description:
 			"A hilarious comedy sketch featuring two friends in funny situations.",
-		previewImageUrl: "https://picsum.photos/seed/comedy/400/600",
-		previewVideoUrl: null,
+		previewImageUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/thumbnails/thumbnail.jpg",
+		previewVideoUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/manifest/video.m3u8",
 		providerModelId: "kling-v1-standard",
 		durationSeconds: 20,
 		roles: [
@@ -103,8 +109,10 @@ const MOCK_TEMPLATES = [
 		id: SEED_TEMPLATE_IDS.solo_adventure,
 		name: "Solo Adventure",
 		description: "An epic solo journey through stunning landscapes.",
-		previewImageUrl: "https://picsum.photos/seed/adventure/400/600",
-		previewVideoUrl: null,
+		previewImageUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/thumbnails/thumbnail.jpg",
+		previewVideoUrl:
+			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/manifest/video.m3u8",
 		providerModelId: "kling-v1-standard",
 		durationSeconds: 60,
 		roles: [{ roleName: "Adventurer", sortOrder: 0 }],

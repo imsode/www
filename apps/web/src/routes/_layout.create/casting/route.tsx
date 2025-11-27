@@ -1,11 +1,15 @@
+import { env } from "cloudflare:workers";
+import { createDb } from "@repo/db/client";
+import { characters, templateRoles, templates } from "@repo/db/schema";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { asc, eq, isNull } from "drizzle-orm";
 import { useState } from "react";
 import { z } from "zod";
-import type { Character } from "@/routes/api/characters/route";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
-import type { Template } from "@/routes/api/templates/route";
 import { CastingStep } from "../-components/CastingStep";
+import type { Character, Template, TemplateRole } from "../-types";
 
 type StartGenerationInput = {
 	templateId: string;
@@ -45,32 +49,93 @@ const castingSearchSchema = z.object({
 	templateId: z.string(),
 });
 
-async function fetchCastingData(
-	templateId: string,
-): Promise<{ template: Template | null; characters: Character[] }> {
-	const [templatesRes, charactersRes] = await Promise.all([
-		fetch("/api/templates"),
-		fetch("/api/characters"),
-	]);
+const PLACEHOLDER_IMAGE_BASE = "https://api.dicebear.com/7.x/avataaars/svg";
 
-	if (!templatesRes.ok || !charactersRes.ok) {
-		throw new Error("Failed to fetch casting data");
-	}
+// Use createServerFn to access database directly - this runs ONLY on the server
+const fetchCastingData = createServerFn()
+	.inputValidator((data: { templateId: string }) => data)
+	.handler(
+		async ({
+			data,
+		}): Promise<{ template: Template | null; characters: Character[] }> => {
+			const db = createDb(env.HYPERDRIVE.connectionString);
 
-	const templatesData: { templates: Template[] } = await templatesRes.json();
-	const charactersData: { characters: Character[] } =
-		await charactersRes.json();
+			// Fetch the specific template
+			const templateResult = await db
+				.select({
+					id: templates.id,
+					name: templates.name,
+					description: templates.description,
+					previewImageUrl: templates.previewImageUrl,
+					previewVideoUrl: templates.previewVideoUrl,
+					durationSeconds: templates.durationSeconds,
+				})
+				.from(templates)
+				.where(eq(templates.id, data.templateId))
+				.limit(1);
 
-	return {
-		template: templatesData.templates.find((t) => t.id === templateId) ?? null,
-		characters: charactersData.characters,
-	};
-}
+			let template: Template | null = null;
+
+			if (templateResult.length > 0) {
+				const t = templateResult[0];
+
+				// Fetch roles for this template
+				const rolesResult = await db
+					.select({
+						id: templateRoles.id,
+						roleName: templateRoles.roleName,
+					})
+					.from(templateRoles)
+					.where(eq(templateRoles.templateId, data.templateId))
+					.orderBy(asc(templateRoles.sortOrder));
+
+				const roles: TemplateRole[] = rolesResult.map((r) => ({
+					id: r.id,
+					name: r.roleName,
+				}));
+
+				template = {
+					id: t.id,
+					name: t.name,
+					description: t.description || "",
+					image: t.previewImageUrl || "",
+					videoUrl: t.previewVideoUrl || "",
+					roles,
+					tags: t.durationSeconds ? [`${t.durationSeconds}s`] : [],
+				};
+			}
+
+			// Fetch characters (virtual characters only for now, since we don't have auth context)
+			const characterResults = await db
+				.select({
+					id: characters.id,
+					name: characters.name,
+					imageKey: characters.imageKey,
+					type: characters.type,
+				})
+				.from(characters)
+				.where(isNull(characters.userId))
+				.orderBy(asc(characters.name));
+
+			const charactersResponse: Character[] = characterResults.map((c) => ({
+				id: c.id,
+				name: c.name,
+				imageUrl: `${PLACEHOLDER_IMAGE_BASE}?seed=${encodeURIComponent(c.name)}`,
+				isUser: c.type === "USER_SELFIE",
+			}));
+
+			return {
+				template,
+				characters: charactersResponse,
+			};
+		},
+	);
 
 export const Route = createFileRoute("/_layout/create/casting")({
 	validateSearch: (search) => castingSearchSchema.parse(search),
 	loaderDeps: ({ search }) => ({ templateId: search.templateId }),
-	loader: ({ deps }) => fetchCastingData(deps.templateId),
+	loader: ({ deps }) =>
+		fetchCastingData({ data: { templateId: deps.templateId } }),
 	component: CastingPage,
 });
 
