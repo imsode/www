@@ -1,13 +1,25 @@
-import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import {
+	createFileRoute,
+	Outlet,
+	redirect,
+	useLocation,
+} from "@tanstack/react-router";
+import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { SearchSidebar } from "@/components/SearchSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/lib/auth/auth-client";
+import { getSessionFn } from "@/lib/auth/session";
 
 export const Route = createFileRoute("/_layout")({
+	beforeLoad: async ({ location }) => {
+		const session = await getSessionFn();
+		if (!session?.user) {
+			throw redirect({ to: "/login", search: { redirect: location.pathname } });
+		}
+	},
 	component: Layout,
 });
 
@@ -73,14 +85,6 @@ function Layout() {
 	const isCreateFlow = location.pathname.startsWith("/create");
 
 	const { data: session, isPending } = useSession();
-
-	// Redirect to login if not authenticated
-	useEffect(() => {
-		if (!isPending && !session) {
-			const redirectUrl = encodeURIComponent(location.pathname);
-			window.location.href = `/login?redirect=${redirectUrl}`;
-		}
-	}, [isPending, session, location.pathname]);
 
 	// Show loading skeleton while checking auth
 	if (isPending) {
