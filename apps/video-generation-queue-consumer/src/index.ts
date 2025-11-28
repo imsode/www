@@ -11,17 +11,17 @@ export default {
 		for (const message of batch.messages) {
 			try {
 				console.log(`Processing message ${message.id}`, message.body);
-				const { jobId } = message.body as { jobId: string };
+				const { generationId } = message.body as { generationId: string };
 
-				if (!jobId) {
-					console.error("Missing jobId in message", message.body);
+				if (!generationId) {
+					console.error("Missing generationId in message", message.body);
 					message.ack();
 					continue;
 				}
 
 				await env.VIDEO_GENERATION_WORKFLOW.create({
 					params: {
-						jobId,
+						generationId,
 					},
 				});
 
@@ -29,7 +29,7 @@ export default {
 				await db
 					.update(generations)
 					.set({ status: "PROCESSING" })
-					.where(eq(generations.id, jobId));
+					.where(eq(generations.id, generationId));
 
 				message.ack();
 			} catch (error) {

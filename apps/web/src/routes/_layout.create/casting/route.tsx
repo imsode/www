@@ -152,7 +152,7 @@ function CastingPage() {
 			navigate({
 				to: "/create/generating",
 				search: {
-					jobId: data.jobId,
+					generationId: data.generationId,
 				},
 			});
 		},

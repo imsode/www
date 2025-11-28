@@ -6,9 +6,9 @@ import { z } from "zod";
 import { GeneratingStep } from "../-components/GeneratingStep";
 
 export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
-	.inputValidator((data: { jobId: string }) => data)
+	.inputValidator((data: { generationId: string }) => data)
 	.handler(async ({ data }) => {
-		console.log("Checking status for job:", data.jobId);
+		console.log("Checking status for generation:", data.generationId);
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
 		const rand = Math.random();
@@ -23,7 +23,7 @@ export const checkVideoGenerationStatus = createServerFn({ method: "GET" })
 	});
 
 const generatingSearchSchema = z.object({
-	jobId: z.string(),
+	generationId: z.string(),
 });
 
 export const Route = createFileRoute("/_layout/create/generating")({
@@ -34,11 +34,11 @@ export const Route = createFileRoute("/_layout/create/generating")({
 function GeneratingPage() {
 	const navigate = useNavigate();
 	const search = Route.useSearch();
-	const { jobId } = search;
+	const { generationId } = search;
 
 	const { data: statusData } = useQuery({
-		queryKey: ["generationStatus", jobId],
-		queryFn: () => checkVideoGenerationStatus({ data: { jobId } }),
+		queryKey: ["generationStatus", generationId],
+		queryFn: () => checkVideoGenerationStatus({ data: { generationId } }),
 		refetchInterval: (query) => {
 			const data = query.state.data;
 			if (data?.status === "completed" || data?.status === "failed") {

@@ -19,14 +19,13 @@ export type StartGenerationRequest = {
 
 // Response type
 export type StartGenerationResponse = {
-	jobId: string;
+	generationId: string;
 };
 
 export const Route = createFileRoute("/api/generations")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
-				console.log("POST /api/generations");
 				// 1. Authenticate user
 				const session = await auth(env).api.getSession({
 					headers: request.headers,
@@ -92,11 +91,11 @@ export const Route = createFileRoute("/api/generations")({
 						})
 						.returning({ id: generations.id });
 
-					const jobId = generation.id;
+					const generationId = generation.id;
 
 					// 5. Create casting records for each assignment
 					const castingValues = assignments.map(({ roleId, characterId }) => ({
-						generationId: jobId,
+						generationId,
 						roleId,
 						characterId,
 					}));
@@ -104,14 +103,14 @@ export const Route = createFileRoute("/api/generations")({
 					await db.insert(generationCastings).values(castingValues);
 
 					// 6. Send job to the video generation queue
-					await env.VIDEO_GENERATION_QUEUE.send({ jobId });
+					await env.VIDEO_GENERATION_QUEUE.send({ generationId });
 
 					console.log(
-						`Video generation job ${jobId} created and queued for user ${userId}`,
+						`Video generation job ${generationId} created and queued for user ${userId}`,
 					);
 
 					// 7. Return the job ID
-					return json({ jobId } satisfies StartGenerationResponse, {
+					return json({ generationId } satisfies StartGenerationResponse, {
 						status: 201,
 					});
 				} catch (error) {
