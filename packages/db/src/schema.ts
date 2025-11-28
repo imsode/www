@@ -1,8 +1,10 @@
+import type { Storyboard } from "@repo/types";
 import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -90,6 +92,7 @@ export const userRelations = relations(user, ({ many }) => ({
 	characters: many(characters),
 	generations: many(generations),
 	videos: many(videos),
+	storyboards: many(storyboards),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -379,6 +382,44 @@ export const videoTagRelations = relations(videoTags, ({ one }) => ({
 }));
 
 // ================================
+// Business Logic - Storyboards
+// ================================
+export const storyboards = pgTable("storyboards", {
+	id: text("id").primaryKey(), // StoryboardId (string)
+
+	title: text("title").notNull(),
+
+	// Keep aspect ratio as a separate column for easy filtering
+	aspectRatio: text("aspect_ratio", {
+		enum: ["9:16", "16:9", "1:1"],
+	}).notNull(),
+
+	// template vs user project
+	isTemplate: boolean("is_template").notNull().default(true),
+
+	// null = system template; non-null = owned by a user
+	ownerUserId: text("owner_user_id"),
+
+	// The full Storyboard struct lives here as JSON
+	data: jsonb("data").$type<Storyboard>().notNull(),
+
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.notNull()
+		.defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date()),
+});
+
+export const storyboardRelations = relations(storyboards, ({ one }) => ({
+	owner: one(user, {
+		fields: [storyboards.ownerUserId],
+		references: [user.id],
+	}),
+}));
+
+// ================================
 // Type Exports
 // ================================
 export type User = typeof user.$inferSelect;
@@ -407,4 +448,7 @@ export type NewVideo = typeof videos.$inferInsert;
 
 export type VideoTag = typeof videoTags.$inferSelect;
 export type NewVideoTag = typeof videoTags.$inferInsert;
+
+export type StoryboardRecord = typeof storyboards.$inferSelect;
+export type NewStoryboard = typeof storyboards.$inferInsert;
 // ================================

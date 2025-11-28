@@ -17,6 +17,7 @@
 		"db:seed:clean": "tsx --env-file=.env src/seed.ts --clean"
 	},
 	"dependencies": {
+		"@repo/types": "workspace:*",
 		"drizzle-orm": "^0.44.7",
 		"postgres": "^3.4.7"
 	},
