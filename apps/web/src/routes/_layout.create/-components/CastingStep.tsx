@@ -17,41 +17,41 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import type { Character, Template } from "../-types";
+import type { Actor, Storyboard } from "../-types";
 
 interface CastingStepProps {
-	template: Template;
-	characters: Character[];
-	assignments: Record<string, string>; // roleId -> characterId
-	onAssign: (roleId: string, charId: string) => void;
+	storyboard: Storyboard;
+	actors: Actor[];
+	assignments: Record<string, string>; // roleId -> actorId
+	onAssign: (roleId: string, actorId: string) => void;
 	onGenerate: () => void;
 	onBack?: () => void;
 	onCancel?: () => void;
 	isGenerating: boolean;
 }
 
-function CharacterGrid({
-	characters,
+function ActorGrid({
+	actors,
 	onSelect,
 }: {
-	characters: Character[];
-	onSelect: (charId: string) => void;
+	actors: Actor[];
+	onSelect: (actorId: string) => void;
 }) {
 	return (
 		<div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-			{characters.map((char) => (
+			{actors.map((actor) => (
 				<button
-					key={char.id}
+					key={actor.id}
 					type="button"
-					onClick={() => onSelect(char.id)}
+					onClick={() => onSelect(actor.id)}
 					className="flex flex-col items-center gap-2 group"
 				>
 					<Avatar className="w-20 h-20 border-2 border-transparent group-hover:border-white/50 transition-all">
-						<AvatarImage src={char.imageUrl} />
-						<AvatarFallback>{char.name[0]}</AvatarFallback>
+						<AvatarImage src={actor.imageUrl} />
+						<AvatarFallback>{actor.name[0]}</AvatarFallback>
 					</Avatar>
 					<span className="text-sm text-zinc-400 group-hover:text-white">
-						{char.name}
+						{actor.name}
 					</span>
 				</button>
 			))}
@@ -70,8 +70,8 @@ function CharacterGrid({
 }
 
 export function CastingStep({
-	template,
-	characters,
+	storyboard,
+	actors,
 	assignments,
 	onAssign,
 	onGenerate,
@@ -80,13 +80,13 @@ export function CastingStep({
 	isGenerating,
 }: CastingStepProps) {
 	const [activeRoleId, setActiveRoleId] = useState<string | null>(null);
-	const activeRole = template.roles.find((r) => r.id === activeRoleId);
-	const isComplete = template.roles.every((role) => assignments[role.id]);
+	const activeRole = storyboard.roles.find((r) => r.id === activeRoleId);
+	const isComplete = storyboard.roles.every((role) => assignments[role.id]);
 	const isMobile = useIsMobile();
 
-	const handleCharacterSelect = (charId: string) => {
+	const handleActorSelect = (actorId: string) => {
 		if (activeRoleId) {
-			onAssign(activeRoleId, charId);
+			onAssign(activeRoleId, actorId);
 			setActiveRoleId(null);
 		}
 	};
@@ -106,10 +106,7 @@ export function CastingStep({
 							</DrawerTitle>
 						</DrawerHeader>
 						<div className="p-4 max-h-[70vh] overflow-y-auto">
-							<CharacterGrid
-								characters={characters}
-								onSelect={handleCharacterSelect}
-							/>
+							<ActorGrid actors={actors} onSelect={handleActorSelect} />
 						</div>
 					</DrawerContent>
 				</Drawer>
@@ -125,10 +122,7 @@ export function CastingStep({
 							</DialogTitle>
 						</DialogHeader>
 						<div className="p-4 max-h-[70vh] overflow-y-auto">
-							<CharacterGrid
-								characters={characters}
-								onSelect={handleCharacterSelect}
-							/>
+							<ActorGrid actors={actors} onSelect={handleActorSelect} />
 						</div>
 					</DialogContent>
 				</Dialog>
@@ -140,8 +134,8 @@ export function CastingStep({
 				<div className="flex-1 h-full flex items-center justify-center pr-[420px] relative">
 					<div className="relative h-full p-4 aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950">
 						<video
-							src={template.videoUrl}
-							poster={template.image}
+							src={storyboard.previewVideoUrl}
+							poster={storyboard.previewImageUrl}
 							autoPlay
 							muted
 							loop
@@ -151,7 +145,7 @@ export function CastingStep({
 						<div className="absolute inset-0 flex items-center justify-center pointer-events-none">
 							<div className="bg-white/20 backdrop-blur-md p-4 rounded-xl text-center">
 								<h2 className="text-white text-2xl font-bold drop-shadow-md">
-									{template.name}
+									{storyboard.name}
 								</h2>
 								<p className="text-white/80 text-sm">Cast your stars</p>
 							</div>
@@ -173,11 +167,9 @@ export function CastingStep({
 							</div>
 
 							<div className="space-y-4">
-								{template.roles.map((role) => {
+								{storyboard.roles.map((role) => {
 									const assignedId = assignments[role.id];
-									const assignedChar = characters.find(
-										(c) => c.id === assignedId,
-									);
+									const assignedActor = actors.find((c) => c.id === assignedId);
 
 									return (
 										<div key={role.id} className="space-y-2">
@@ -189,22 +181,22 @@ export function CastingStep({
 												onClick={() => setActiveRoleId(role.id)}
 												className={cn(
 													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-950 group hover:bg-zinc-900",
-													assignedChar
+													assignedActor
 														? "border-white/20 hover:border-white/40"
 														: "border-zinc-800 hover:border-zinc-700 border-dashed",
 												)}
 											>
-												{assignedChar ? (
+												{assignedActor ? (
 													<>
 														<Avatar className="w-12 h-12 border border-white/10">
-															<AvatarImage src={assignedChar.imageUrl} />
+															<AvatarImage src={assignedActor.imageUrl} />
 															<AvatarFallback>
-																{assignedChar.name[0]}
+																{assignedActor.name[0]}
 															</AvatarFallback>
 														</Avatar>
 														<div className="flex-1 text-left">
 															<div className="font-medium text-white">
-																{assignedChar.name}
+																{assignedActor.name}
 															</div>
 															<div className="text-xs text-zinc-400">
 																Tap to change
@@ -271,8 +263,8 @@ export function CastingStep({
 				{/* 1. Background Video */}
 				<div className="absolute inset-0 z-0 bg-black">
 					<video
-						src={template.videoUrl}
-						poster={template.image}
+						src={storyboard.previewVideoUrl}
+						poster={storyboard.previewImageUrl}
 						autoPlay
 						muted
 						loop
@@ -312,7 +304,7 @@ export function CastingStep({
 					{/* Header Info Overlay */}
 					<div className="px-6 pb-4 text-center">
 						<h2 className="text-white text-2xl font-bold drop-shadow-lg">
-							{template.name}
+							{storyboard.name}
 						</h2>
 					</div>
 
@@ -323,17 +315,15 @@ export function CastingStep({
 							<div className="flex items-center justify-between">
 								<h3 className="text-lg font-bold text-white">Cast Roles</h3>
 								<span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">
-									{template.roles.filter((r) => assignments[r.id]).length} /{" "}
-									{template.roles.length} Ready
+									{storyboard.roles.filter((r) => assignments[r.id]).length} /{" "}
+									{storyboard.roles.length} Ready
 								</span>
 							</div>
 
 							<div className="space-y-3">
-								{template.roles.map((role) => {
+								{storyboard.roles.map((role) => {
 									const assignedId = assignments[role.id];
-									const assignedChar = characters.find(
-										(c) => c.id === assignedId,
-									);
+									const assignedActor = actors.find((c) => c.id === assignedId);
 
 									return (
 										<div key={role.id} className="space-y-1.5">
@@ -345,22 +335,22 @@ export function CastingStep({
 												onClick={() => setActiveRoleId(role.id)}
 												className={cn(
 													"w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 relative overflow-hidden",
-													assignedChar
+													assignedActor
 														? "bg-white/10 border-white/20"
 														: "bg-white/5 border-white/5 border-dashed hover:bg-white/10",
 												)}
 											>
-												{assignedChar ? (
+												{assignedActor ? (
 													<>
 														<Avatar className="w-10 h-10 border border-white/20">
-															<AvatarImage src={assignedChar.imageUrl} />
+															<AvatarImage src={assignedActor.imageUrl} />
 															<AvatarFallback>
-																{assignedChar.name[0]}
+																{assignedActor.name[0]}
 															</AvatarFallback>
 														</Avatar>
 														<div className="flex-1 text-left">
 															<div className="font-medium text-white text-sm">
-																{assignedChar.name}
+																{assignedActor.name}
 															</div>
 														</div>
 														<div className="text-xs text-white/50 px-2">

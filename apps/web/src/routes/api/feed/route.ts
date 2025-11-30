@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { createDb } from "@repo/db/client";
-import { user, videos, videoTags } from "@repo/db/schema";
+import { assets, user, videos } from "@repo/db/schema";
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { and, desc, eq, inArray, isNotNull, lt, or } from "drizzle-orm";
@@ -52,10 +52,7 @@ export const Route = createFileRoute("/api/feed")({
 
 				// Build where conditions
 				// Only show published videos (with a publishedAt date) that are public
-				const conditions = [
-					eq(videos.visibility, "PUBLIC"),
-					isNotNull(videos.publishedAt),
-				];
+				const conditions = [isNotNull(videos.publishedAt)];
 
 				// Parse cursor and add pagination condition
 				if (cursorParam) {
@@ -83,17 +80,19 @@ export const Route = createFileRoute("/api/feed")({
 						id: videos.id,
 						userId: videos.userId,
 						caption: videos.caption,
-						videoFileKey: videos.videoFileKey,
-						thumbnailKey: videos.thumbnailKey,
+						assetKey: assets.assetKey,
+						posterKey: assets.posterKey,
 						likesCount: videos.likesCount,
 						commentsCount: videos.commentsCount,
 						sharesCount: videos.sharesCount,
 						publishedAt: videos.publishedAt,
 						userName: user.name,
 						userImage: user.image,
+						tags: videos.tags,
 					})
 					.from(videos)
 					.innerJoin(user, eq(videos.userId, user.id))
+					.innerJoin(assets, eq(videos.assetId, assets.id))
 					.where(and(...conditions))
 					.orderBy(desc(videos.publishedAt), desc(videos.id))
 					.limit(PAGE_SIZE + 1); // Fetch one extra to determine if there's more
@@ -103,27 +102,6 @@ export const Route = createFileRoute("/api/feed")({
 				const videosToReturn = hasMore
 					? videoResults.slice(0, PAGE_SIZE)
 					: videoResults;
-
-				// Fetch tags for all videos in batch
-				const videoIds = videosToReturn.map((v) => v.id);
-				const tagsResults =
-					videoIds.length > 0
-						? await db
-								.select({
-									videoId: videoTags.videoId,
-									tag: videoTags.tag,
-								})
-								.from(videoTags)
-								.where(inArray(videoTags.videoId, videoIds))
-						: [];
-
-				// Group tags by video ID
-				const tagsByVideoId = new Map<string, string[]>();
-				for (const { videoId, tag } of tagsResults) {
-					const existing = tagsByVideoId.get(videoId) || [];
-					existing.push(tag);
-					tagsByVideoId.set(videoId, existing);
-				}
 
 				// Transform to FeedVideo format
 				const feedVideos: FeedVideo[] = videosToReturn.map((video) => ({
@@ -136,11 +114,11 @@ export const Route = createFileRoute("/api/feed")({
 					likes: video.likesCount,
 					comments: video.commentsCount,
 					shares: video.sharesCount,
-					thumbnail: video.thumbnailKey
-						? `${CLOUDFLARE_STREAM_BASE_URL}/${video.thumbnailKey}`
-						: `${CLOUDFLARE_STREAM_BASE_URL}/${video.videoFileKey}/thumbnails/thumbnail.jpg`,
-					videoUrl: `${CLOUDFLARE_STREAM_BASE_URL}/${video.videoFileKey}/manifest/video.m3u8`,
-					tags: tagsByVideoId.get(video.id) || [],
+					thumbnail: video.posterKey
+						? `${CLOUDFLARE_STREAM_BASE_URL}/${video.posterKey}`
+						: `${CLOUDFLARE_STREAM_BASE_URL}/${video.assetKey}/thumbnails/thumbnail.jpg`,
+					videoUrl: `${CLOUDFLARE_STREAM_BASE_URL}/${video.assetKey}/manifest/video.m3u8`,
+					tags: video.tags,
 				}));
 
 				// Build next cursor from the last video

@@ -14,12 +14,12 @@ import { useSession } from "@/lib/auth/auth-client";
 import { getSessionFn } from "@/lib/auth/session";
 
 export const Route = createFileRoute("/_layout")({
-	beforeLoad: async ({ location }) => {
-		const session = await getSessionFn();
-		if (!session?.user) {
-			throw redirect({ to: "/login", search: { redirect: location.pathname } });
-		}
-	},
+	// beforeLoad: async ({ location }) => {
+	// 	const session = await getSessionFn();
+	// 	if (!session?.user) {
+	// 		throw redirect({ to: "/login", search: { redirect: location.pathname } });
+	// 	}
+	// },
 	component: Layout,
 });
 

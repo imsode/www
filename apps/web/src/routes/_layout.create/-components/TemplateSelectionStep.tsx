@@ -4,21 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { cn } from "@/lib/utils";
-import type { Template } from "../-types";
+import type { Storyboard } from "../-types";
 
 interface TemplateSelectionStepProps {
-	templates: Template[];
-	selectedTemplateId: string | null;
+	storyboards: Storyboard[];
+	selectedStoryboardId: string | null;
 	onSelect: (id: string) => void;
-	onNext: (templateId?: string) => void;
+	onNext: (storyboardId?: string) => void;
 	onBack?: () => void;
 	onCancel?: () => void;
 }
 
 interface MobileTemplateFeedProps {
-	templates: Template[];
+	storyboards: Storyboard[];
 	onSelect: (id: string) => void;
-	onNext: (templateId?: string) => void;
+	onNext: (storyboardId?: string) => void;
 	onBack?: () => void;
 	onCancel?: () => void;
 }
@@ -37,7 +37,7 @@ const TemplateTags = ({ tags }: { tags: string[] }) => (
 );
 
 const MobileTemplateFeed = ({
-	templates,
+	storyboards,
 	onSelect,
 	onNext,
 	onBack,
@@ -50,12 +50,12 @@ const MobileTemplateFeed = ({
 	useEffect(() => {
 		// Use functional update to read current activeIndex without adding it as dependency
 		setActiveIndex((prev) => {
-			if (templates.length > 0 && prev >= templates.length) {
-				return templates.length - 1;
+			if (storyboards.length > 0 && prev >= storyboards.length) {
+				return storyboards.length - 1;
 			}
 			return prev;
 		});
-	}, [templates.length]);
+	}, [storyboards.length]);
 
 	// Initial estimate using window height
 	const [rowHeight, setRowHeight] = useState(() => {
@@ -82,7 +82,7 @@ const MobileTemplateFeed = ({
 	}, []);
 
 	const virtualizer = useVirtualizer({
-		count: templates.length,
+		count: storyboards.length,
 		getScrollElement: () => parentRef.current,
 		estimateSize: () => rowHeight,
 		overscan: 1,
@@ -92,7 +92,7 @@ const MobileTemplateFeed = ({
 	// Note: virtualizer.scrollOffset triggers re-renders when scroll changes
 	const scrollOffset = virtualizer.scrollOffset ?? 0;
 	useEffect(() => {
-		if (!templates.length) return;
+		if (!storyboards.length) return;
 
 		// Get virtualItems inside effect to avoid stale reference issues
 		const items = virtualizer.getVirtualItems();
@@ -109,19 +109,19 @@ const MobileTemplateFeed = ({
 			}
 		}
 
-		if (centeredIndex != null && centeredIndex < templates.length) {
+		if (centeredIndex != null && centeredIndex < storyboards.length) {
 			setActiveIndex((prev) => (prev !== centeredIndex ? centeredIndex : prev));
 		}
-	}, [scrollOffset, templates.length, virtualizer]);
+	}, [scrollOffset, storyboards.length, virtualizer]);
 
 	// Get virtualItems for rendering (this is fine outside useEffect)
 	const virtualItems = virtualizer.getVirtualItems();
 
-	if (!templates.length) {
+	if (!storyboards.length) {
 		return (
 			<div className="flex w-full h-full items-center justify-center bg-black text-white">
 				<p className="text-sm font-semibold text-white/60">
-					No templates available.
+					No storyboards available.
 				</p>
 			</div>
 		);
@@ -162,8 +162,8 @@ const MobileTemplateFeed = ({
 					}}
 				>
 					{virtualItems.map((virtualRow) => {
-						const template = templates[virtualRow.index];
-						if (!template) return null;
+						const storyboard = storyboards[virtualRow.index];
+						if (!storyboard) return null;
 
 						const isActive = virtualRow.index === activeIndex;
 						// Only mount VideoPlayer for items near the active index
@@ -187,15 +187,15 @@ const MobileTemplateFeed = ({
 								<div className="relative w-full h-full bg-black">
 									{isNearActive ? (
 										<VideoPlayer
-											src={template.videoUrl}
-											poster={template.image}
+											src={storyboard.previewVideoUrl}
+											poster={storyboard.previewImageUrl}
 											isActive={isActive}
 											className="absolute inset-0 w-full h-full object-cover opacity-80"
 										/>
 									) : (
 										<img
-											src={template.image}
-											alt={template.name}
+											src={storyboard.previewImageUrl}
+											alt={storyboard.name}
 											className="absolute inset-0 w-full h-full object-cover opacity-80"
 										/>
 									)}
@@ -206,12 +206,14 @@ const MobileTemplateFeed = ({
 									{/* Template Info */}
 									<div className="absolute inset-0 flex flex-col justify-end p-6 pb-24 pointer-events-none">
 										<h3 className="text-3xl font-bold text-white mb-2 drop-shadow-md">
-											{template.name}
+											{storyboard.name}
 										</h3>
-										<TemplateTags tags={template.tags} />
-										<p className="text-white/80 mb-4">{template.description}</p>
+										<TemplateTags tags={storyboard.tags} />
+										<p className="text-white/80 mb-4">
+											{storyboard.description}
+										</p>
 										<div className="text-white/60 text-sm">
-											Requires: {template.roles.map((r) => r.name).join(", ")}
+											Requires: {storyboard.roles.map((r) => r.name).join(", ")}
 										</div>
 									</div>
 
@@ -220,8 +222,8 @@ const MobileTemplateFeed = ({
 										<Button
 											type="button"
 											onClick={() => {
-												onSelect(template.id);
-												onNext(template.id);
+												onSelect(storyboard.id);
+												onNext(storyboard.id);
 											}}
 											className="w-full rounded-full bg-white text-black hover:bg-white/90"
 											size="lg"
@@ -240,14 +242,14 @@ const MobileTemplateFeed = ({
 };
 
 interface TemplateCardProps {
-	template: Template;
+	storyboard: Storyboard;
 	isSelected: boolean;
 	onSelect: (id: string) => void;
 	onHover?: (id: string | null) => void;
 }
 
 const TemplateCard = ({
-	template,
+	storyboard,
 	isSelected,
 	onSelect,
 	onHover,
@@ -256,8 +258,8 @@ const TemplateCard = ({
 	return (
 		<button
 			type="button"
-			onClick={() => onSelect(template.id)}
-			onMouseEnter={() => onHover?.(template.id)}
+			onClick={() => onSelect(storyboard.id)}
+			onMouseEnter={() => onHover?.(storyboard.id)}
 			onMouseLeave={() => onHover?.(null)}
 			className={cn(
 				"group relative w-full aspect-[9/16] rounded-xl overflow-hidden border-2 text-left transition-all",
@@ -268,8 +270,8 @@ const TemplateCard = ({
 			)}
 		>
 			<img
-				src={template.image}
-				alt={template.name}
+				src={storyboard.previewImageUrl}
+				alt={storyboard.name}
 				className="absolute inset-0 w-full h-full object-cover"
 			/>
 			<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 transition-opacity" />
@@ -290,13 +292,13 @@ const TemplateCard = ({
 
 			<div className="absolute bottom-0 left-0 p-4 w-full">
 				<h4 className="text-white font-bold truncate text-lg mb-1">
-					{template.name}
+					{storyboard.name}
 				</h4>
 				<div className="flex flex-wrap gap-2">
 					<span className="text-white/90 text-xs bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">
-						{template.roles.length} Roles
+						{storyboard.roles.length} Roles
 					</span>
-					{template.tags.slice(0, 2).map((tag) => (
+					{storyboard.tags.slice(0, 2).map((tag) => (
 						<span
 							key={tag}
 							className="text-white/70 text-xs border border-white/20 px-2 py-0.5 rounded-full"
@@ -311,27 +313,27 @@ const TemplateCard = ({
 };
 
 export function TemplateSelectionStep({
-	templates,
-	selectedTemplateId,
+	storyboards,
+	selectedStoryboardId,
 	onSelect,
 	onNext,
 	onBack,
 	onCancel,
 }: TemplateSelectionStepProps) {
 	// State for the active preview (hovered or selected)
-	const [hoveredTemplateId, setHoveredTemplateId] = useState<string | null>(
+	const [hoveredStoryboardId, setHoveredStoryboardId] = useState<string | null>(
 		null,
 	);
 	const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// Debounced hover handler to prevent rapid source changes from breaking Vidstack
-	const handleHover = (templateId: string | null) => {
+	const handleHover = (storyboardId: string | null) => {
 		if (hoverTimeoutRef.current) {
 			clearTimeout(hoverTimeoutRef.current);
 		}
 		// Small delay to debounce rapid hover changes
 		hoverTimeoutRef.current = setTimeout(() => {
-			setHoveredTemplateId(templateId);
+			setHoveredStoryboardId(storyboardId);
 		}, 50);
 	};
 
@@ -345,16 +347,16 @@ export function TemplateSelectionStep({
 	}, []);
 
 	// Determine which template to show in the large preview
-	const activeTemplateId =
-		hoveredTemplateId || selectedTemplateId || templates[0]?.id;
-	const activeTemplate = templates.find((t) => t.id === activeTemplateId);
+	const activeStoryboardId =
+		hoveredStoryboardId || selectedStoryboardId || storyboards[0]?.id;
+	const activeStoryboard = storyboards.find((s) => s.id === activeStoryboardId);
 
 	return (
 		<div className="h-screen flex flex-col bg-black overflow-hidden relative">
 			{/* Mobile View: Full Screen Vertical Feed */}
 			<div className="lg:hidden w-full h-full">
 				<MobileTemplateFeed
-					templates={templates}
+					storyboards={storyboards}
 					onSelect={onSelect}
 					onNext={onNext}
 					onBack={onBack}
@@ -366,22 +368,22 @@ export function TemplateSelectionStep({
 			<div className="hidden lg:flex w-full h-full relative bg-black">
 				{/* 1. The Stage (Left) - Flex-1 but padded to respect absolute sidebar */}
 				<div className="flex-1 h-full flex items-center justify-center pr-[420px] relative">
-					{activeTemplate && (
+					{activeStoryboard && (
 						<div className="relative h-full p-4 aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-950">
 							{/* No key prop - let Vidstack handle source changes internally to avoid unmount/mount race conditions */}
 							<VideoPlayer
-								src={activeTemplate.videoUrl}
-								poster={activeTemplate.image}
+								src={activeStoryboard.previewVideoUrl}
+								poster={activeStoryboard.previewImageUrl}
 								isActive={true}
 								className="w-full h-full object-cover"
 							/>
 							{/* Cinematic Info Overlay */}
 							<div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500">
 								<h2 className="text-white text-3xl font-bold drop-shadow-md">
-									{activeTemplate.name}
+									{activeStoryboard.name}
 								</h2>
 								<p className="text-white/80 mt-2 line-clamp-2 text-lg">
-									{activeTemplate.description}
+									{activeStoryboard.description}
 								</p>
 							</div>
 						</div>
@@ -399,12 +401,12 @@ export function TemplateSelectionStep({
 					{/* Scrollable Grid */}
 					<div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
 						<div className="grid grid-cols-2 gap-3">
-							{templates.map((template) => (
-								<div key={template.id}>
+							{storyboards.map((storyboard) => (
+								<div key={storyboard.id}>
 									<TemplateCard
-										template={template}
+										storyboard={storyboard}
 										onSelect={onSelect}
-										isSelected={selectedTemplateId === template.id}
+										isSelected={selectedStoryboardId === storyboard.id}
 										onHover={handleHover}
 									/>
 								</div>
@@ -428,7 +430,7 @@ export function TemplateSelectionStep({
 							<Button
 								type="button"
 								onClick={() => onNext()}
-								disabled={!selectedTemplateId}
+								disabled={!selectedStoryboardId}
 								className="flex-1 rounded-full bg-white text-black hover:bg-white/90 font-semibold h-12"
 							>
 								Continue <ArrowRight className="ml-2 h-4 w-4" />

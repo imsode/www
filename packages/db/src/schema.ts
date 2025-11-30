@@ -1,4 +1,4 @@
-import type { Storyboard } from "@repo/types";
+import type { GenerationRequest, Storyboard } from "@repo/types";
 import { relations } from "drizzle-orm";
 import {
 	boolean,
@@ -89,7 +89,7 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account),
-	characters: many(characters),
+	actors: many(actors),
 	generations: many(generations),
 	videos: many(videos),
 	storyboards: many(storyboards),
@@ -110,89 +110,21 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 // ================================
-// Business Logic - Templates
-// ================================
-export const templates = pgTable("templates", {
-	id: uuid("id").primaryKey().defaultRandom(),
-	name: text("name").notNull(),
-	description: text("description"),
-	previewImageUrl: text("preview_image_url"),
-	previewVideoUrl: text("preview_video_url"),
-	providerModelId: text("provider_model_id").notNull(),
-	durationSeconds: integer("duration_seconds"),
-	createdAt: timestamp("created_at", { withTimezone: true })
-		.defaultNow()
-		.notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true })
-		.defaultNow()
-		.notNull()
-		.$onUpdate(() => new Date()),
-});
-
-export const templateRoles = pgTable(
-	"template_roles",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		templateId: uuid("template_id")
-			.references(() => templates.id, { onDelete: "cascade" })
-			.notNull(),
-		roleName: text("role_name").notNull(), // e.g., "Hero", "Partner"
-		sortOrder: integer("sort_order").default(0).notNull(),
-	},
-	(table) => [index("templateRoles_templateId_idx").on(table.templateId)],
-);
-
-export const templateTags = pgTable(
-	"template_tags",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		templateId: uuid("template_id")
-			.references(() => templates.id, { onDelete: "cascade" })
-			.notNull(),
-		tag: text("tag").notNull(),
-	},
-	(table) => [
-		index("templateTags_templateId_idx").on(table.templateId),
-		index("templateTags_tag_idx").on(table.tag),
-	],
-);
-
-export const templateRelations = relations(templates, ({ many }) => ({
-	roles: many(templateRoles),
-	tags: many(templateTags),
-	generations: many(generations),
-}));
-
-export const templateRoleRelations = relations(templateRoles, ({ one }) => ({
-	template: one(templates, {
-		fields: [templateRoles.templateId],
-		references: [templates.id],
-	}),
-}));
-
-export const templateTagRelations = relations(templateTags, ({ one }) => ({
-	template: one(templates, {
-		fields: [templateTags.templateId],
-		references: [templates.id],
-	}),
-}));
-
-// ================================
 // Business Logic - Characters
 // ================================
-export const characters = pgTable(
-	"characters",
+export const actors = pgTable(
+	"actors",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		// null = system-provided (virtual), set = user's personal character
 		userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
 		name: text("name").notNull(),
-		imageKey: text("image_key").notNull(),
-		thumbnailKey: text("thumbnail_key"),
+		assetId: uuid("asset_id")
+			.references(() => assets.id, { onDelete: "restrict" })
+			.notNull(),
 		type: text("type", {
 			enum: ["USER_SELFIE", "VIRTUAL"],
 		}).notNull(),
-		category: text("category"), // For virtual characters: "Female", "Male", etc.
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()
 			.notNull(),
@@ -202,17 +134,20 @@ export const characters = pgTable(
 			.$onUpdate(() => new Date()),
 	},
 	(table) => [
-		index("characters_userId_idx").on(table.userId),
-		index("characters_type_idx").on(table.type),
+		index("actors_userId_idx").on(table.userId),
+		index("actors_type_idx").on(table.type),
 	],
 );
 
-export const characterRelations = relations(characters, ({ one, many }) => ({
+export const actorRelations = relations(actors, ({ one }) => ({
 	user: one(user, {
-		fields: [characters.userId],
+		fields: [actors.userId],
 		references: [user.id],
 	}),
-	castings: many(generationCastings),
+	asset: one(assets, {
+		fields: [actors.assetId],
+		references: [assets.id],
+	}),
 }));
 
 // ================================
@@ -225,16 +160,17 @@ export const generations = pgTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		templateId: uuid("template_id")
-			.references(() => templates.id, { onDelete: "restrict" })
+		generationRequest: jsonb("generation_request")
+			.$type<GenerationRequest>()
 			.notNull(),
 		status: text("status", {
 			enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
 		})
 			.notNull()
 			.default("PENDING"),
-		videoFileKey: text("video_file_key"),
-		externalId: text("external_id"),
+		generatedAssetId: uuid("generated_asset_id")
+			.references(() => assets.id, { onDelete: "restrict" })
+			.notNull(),
 		errorMessage: text("error_message"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()
@@ -250,55 +186,16 @@ export const generations = pgTable(
 	],
 );
 
-export const generationCastings = pgTable(
-	"generation_castings",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		generationId: uuid("generation_id")
-			.references(() => generations.id, { onDelete: "cascade" })
-			.notNull(),
-		roleId: uuid("role_id")
-			.references(() => templateRoles.id, { onDelete: "restrict" })
-			.notNull(),
-		characterId: uuid("character_id")
-			.references(() => characters.id, { onDelete: "restrict" })
-			.notNull(),
-	},
-	(table) => [
-		index("generationCastings_generationId_idx").on(table.generationId),
-	],
-);
-
-export const generationRelations = relations(generations, ({ one, many }) => ({
+export const generationRelations = relations(generations, ({ one }) => ({
 	user: one(user, {
 		fields: [generations.userId],
 		references: [user.id],
 	}),
-	template: one(templates, {
-		fields: [generations.templateId],
-		references: [templates.id],
+	generatedAsset: one(assets, {
+		fields: [generations.generatedAssetId],
+		references: [assets.id],
 	}),
-	castings: many(generationCastings),
-	video: one(videos),
 }));
-
-export const generationCastingRelations = relations(
-	generationCastings,
-	({ one }) => ({
-		generation: one(generations, {
-			fields: [generationCastings.generationId],
-			references: [generations.id],
-		}),
-		role: one(templateRoles, {
-			fields: [generationCastings.roleId],
-			references: [templateRoles.id],
-		}),
-		character: one(characters, {
-			fields: [generationCastings.characterId],
-			references: [characters.id],
-		}),
-	}),
-);
 
 // ================================
 // Business Logic - Videos (Published Content)
@@ -310,26 +207,17 @@ export const videos = pgTable(
 		userId: text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		// Source generation (optional - could support direct upload in future)
-		generationId: uuid("generation_id").references(() => generations.id, {
-			onDelete: "set null",
-		}),
 		// Content
-		caption: text("caption"),
-		videoFileKey: text("video_file_key").notNull(),
-		thumbnailKey: text("thumbnail_key"),
-		durationSeconds: integer("duration_seconds"),
-		// Visibility
-		visibility: text("visibility", {
-			enum: ["PUBLIC", "PRIVATE", "UNLISTED"],
-		})
-			.notNull()
-			.default("PUBLIC"),
+		caption: text("caption").notNull(),
+		assetId: uuid("asset_id")
+			.references(() => assets.id, { onDelete: "restrict" })
+			.notNull(),
 		// Engagement counters (denormalized for performance)
 		likesCount: integer("likes_count").default(0).notNull(),
 		commentsCount: integer("comments_count").default(0).notNull(),
 		sharesCount: integer("shares_count").default(0).notNull(),
 		viewsCount: integer("views_count").default(0).notNull(),
+		tags: text("tags").array().notNull(),
 		// Timestamps
 		publishedAt: timestamp("published_at", { withTimezone: true }),
 		createdAt: timestamp("created_at", { withTimezone: true })
@@ -342,42 +230,18 @@ export const videos = pgTable(
 	},
 	(table) => [
 		index("videos_userId_idx").on(table.userId),
-		index("videos_visibility_idx").on(table.visibility),
 		index("videos_publishedAt_idx").on(table.publishedAt),
 	],
 );
 
-export const videoTags = pgTable(
-	"video_tags",
-	{
-		id: uuid("id").primaryKey().defaultRandom(),
-		videoId: uuid("video_id")
-			.references(() => videos.id, { onDelete: "cascade" })
-			.notNull(),
-		tag: text("tag").notNull(),
-	},
-	(table) => [
-		index("videoTags_videoId_idx").on(table.videoId),
-		index("videoTags_tag_idx").on(table.tag),
-	],
-);
-
-export const videoRelations = relations(videos, ({ one, many }) => ({
+export const videoRelations = relations(videos, ({ one }) => ({
 	user: one(user, {
 		fields: [videos.userId],
 		references: [user.id],
 	}),
-	generation: one(generations, {
-		fields: [videos.generationId],
-		references: [generations.id],
-	}),
-	tags: many(videoTags),
-}));
-
-export const videoTagRelations = relations(videoTags, ({ one }) => ({
-	video: one(videos, {
-		fields: [videoTags.videoId],
-		references: [videos.id],
+	asset: one(assets, {
+		fields: [videos.assetId],
+		references: [assets.id],
 	}),
 }));
 
@@ -387,21 +251,12 @@ export const videoTagRelations = relations(videoTags, ({ one }) => ({
 export const storyboards = pgTable("storyboards", {
 	id: text("id").primaryKey(), // StoryboardId (string)
 
-	title: text("title").notNull(),
-
-	// Keep aspect ratio as a separate column for easy filtering
-	aspectRatio: text("aspect_ratio", {
-		enum: ["9:16", "16:9", "1:1"],
-	}).notNull(),
-
-	// template vs user project
-	isTemplate: boolean("is_template").notNull().default(true),
-
-	// null = system template; non-null = owned by a user
-	ownerUserId: text("owner_user_id"),
-
 	// The full Storyboard struct lives here as JSON
 	data: jsonb("data").$type<Storyboard>().notNull(),
+
+	previewVideoAssetId: uuid("preview_video_asset_id")
+		.references(() => assets.id, { onDelete: "restrict" })
+		.notNull(),
 
 	createdAt: timestamp("created_at", { withTimezone: true })
 		.notNull()
@@ -413,11 +268,32 @@ export const storyboards = pgTable("storyboards", {
 });
 
 export const storyboardRelations = relations(storyboards, ({ one }) => ({
-	owner: one(user, {
-		fields: [storyboards.ownerUserId],
-		references: [user.id],
+	asset: one(assets, {
+		fields: [storyboards.previewVideoAssetId],
+		references: [assets.id],
 	}),
 }));
+
+export const assets = pgTable("assets", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	assetType: text("asset_type", {
+		enum: ["VIDEO", "IMAGE", "AUDIO"],
+	}).notNull(),
+	assetKey: text("asset_key").notNull(),
+	// only for video
+	posterKey: text("poster_key"),
+	// only for video and audio
+	durationSeconds: integer("duration_seconds"),
+	// only for video
+	resolution: jsonb("resolution").$type<{ width: number; height: number }>(),
+	createdAt: timestamp("created_at", { withTimezone: true })
+		.defaultNow()
+		.notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true })
+		.defaultNow()
+		.notNull()
+		.$onUpdate(() => new Date()),
+});
 
 // ================================
 // Type Exports
@@ -425,30 +301,18 @@ export const storyboardRelations = relations(storyboards, ({ one }) => ({
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
 
-export type Template = typeof templates.$inferSelect;
-export type NewTemplate = typeof templates.$inferInsert;
-
-export type TemplateRole = typeof templateRoles.$inferSelect;
-export type NewTemplateRole = typeof templateRoles.$inferInsert;
-
-export type TemplateTag = typeof templateTags.$inferSelect;
-export type NewTemplateTag = typeof templateTags.$inferInsert;
-
-export type Character = typeof characters.$inferSelect;
-export type NewCharacter = typeof characters.$inferInsert;
+export type Actor = typeof actors.$inferSelect;
+export type NewActor = typeof actors.$inferInsert;
 
 export type Generation = typeof generations.$inferSelect;
 export type NewGeneration = typeof generations.$inferInsert;
 
-export type GenerationCasting = typeof generationCastings.$inferSelect;
-export type NewGenerationCasting = typeof generationCastings.$inferInsert;
-
 export type Video = typeof videos.$inferSelect;
 export type NewVideo = typeof videos.$inferInsert;
 
-export type VideoTag = typeof videoTags.$inferSelect;
-export type NewVideoTag = typeof videoTags.$inferInsert;
-
 export type StoryboardRecord = typeof storyboards.$inferSelect;
 export type NewStoryboard = typeof storyboards.$inferInsert;
+
+export type Asset = typeof assets.$inferSelect;
+export type NewAsset = typeof assets.$inferInsert;
 // ================================

@@ -9,8 +9,11 @@ type AspectRatio = "9:16" | "16:9" | "1:1";
 export type Storyboard = {
 	id: StoryboardId;
 	title: string;
+	description: string;
 	aspectRatio: AspectRatio; // probably always "9:16" for your app, but good to keep
 	scenes: Scene[];
+	roles: Role[];
+	tags: string[];
 };
 
 type SceneId = string;
@@ -48,7 +51,7 @@ export type Scene = {
 	roles: Role[];
 };
 
-type Role = {
+export type Role = {
 	id: string;
 	name: string;
 	displayName: string;

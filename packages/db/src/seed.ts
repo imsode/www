@@ -1,186 +1,190 @@
 import { eq, like } from "drizzle-orm";
 import { createDb } from "./client";
 import {
-	characters,
-	templateRoles,
-	templates,
+	actors,
+	assets,
+	type NewActor,
+	type NewAsset,
+	type NewStoryboard,
+	type NewUser,
+	type NewVideo,
+	storyboards,
 	user,
 	videos,
-	videoTags,
 } from "./schema";
 
 // Seed user IDs are prefixed with "seed_" for easy identification and cleanup
 const SEED_USER_PREFIX = "seed_";
 // Seed template/character IDs use fixed UUIDs for consistent relationships
-const SEED_TEMPLATE_IDS = {
+const SEED_STORYBOARD_IDS = {
 	romantic_dance: "00000000-0000-0000-0000-000000000001",
 	action_hero: "00000000-0000-0000-0000-000000000002",
 	comedy_duo: "00000000-0000-0000-0000-000000000003",
 	solo_adventure: "00000000-0000-0000-0000-000000000004",
 } as const;
 
-const SEED_CHARACTER_IDS = {
-	emma: "00000000-0000-0000-0001-000000000001",
-	liam: "00000000-0000-0000-0001-000000000002",
-	sophia: "00000000-0000-0000-0001-000000000003",
-	noah: "00000000-0000-0000-0001-000000000004",
-	olivia: "00000000-0000-0000-0001-000000000005",
-	james: "00000000-0000-0000-0001-000000000006",
+const SEED_ACTOR_IDS = {
+	emma: "00000000-0000-0000-0001-000000000005",
+	liam: "00000000-0000-0000-0001-000000000006",
+	sophia: "00000000-0000-0000-0001-000000000007",
+	noah: "00000000-0000-0000-0001-000000000008",
+	olivia: "00000000-0000-0000-0001-000000000009",
+	james: "00000000-0000-0000-0001-000000000010",
 } as const;
 
-// Mock data to seed
-const MOCK_USERS = [
+const SEED_VIDEO_IDS = {
+	romantic_dance: "00000000-0000-0000-0000-000000000011",
+	action_hero: "00000000-0000-0000-0000-000000000012",
+	comedy_duo: "00000000-0000-0000-0000-000000000013",
+	solo_adventure: "00000000-0000-0000-0000-000000000014",
+} as const;
+
+const MOCK_USERS: NewUser[] = [
 	{
 		id: "seed_storyteller_jane",
-		name: "storyteller_jane",
+		name: "Jane",
 		email: "jane@example.com",
-		image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
+		emailVerified: true,
 	},
 	{
 		id: "seed_creative_mike",
-		name: "creative_mike",
+		name: "Mike",
 		email: "mike@example.com",
-		image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
+		emailVerified: true,
 	},
 	{
 		id: "seed_traveler_sarah",
-		name: "traveler_sarah",
+		name: "Sarah",
 		email: "sarah@example.com",
-		image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+		emailVerified: true,
 	},
 	{
 		id: "seed_fitness_alex",
-		name: "fitness_alex",
+		name: "Alex",
 		email: "alex@example.com",
-		image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+		emailVerified: true,
 	},
 ];
 
-const MOCK_TEMPLATES = [
+const SEED_ASSETS: NewAsset[] = [
 	{
-		id: SEED_TEMPLATE_IDS.romantic_dance,
-		name: "Romantic Dance",
-		description:
-			"A beautiful romantic dance sequence with two partners under the moonlight.",
-		previewImageUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/thumbnails/thumbnail.jpg",
-		previewVideoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/e19a11c90dc60868439e30758a223ebc/manifest/video.m3u8",
-		providerModelId: "kling-v1-pro",
-		durationSeconds: 30,
-		roles: [
-			{ roleName: "Lead Dancer", sortOrder: 0 },
-			{ roleName: "Partner", sortOrder: 1 },
-		],
+		id: SEED_ACTOR_IDS.emma,
+		assetType: "IMAGE",
+		assetKey: "actors/virtual/emma.jpg",
 	},
 	{
-		id: SEED_TEMPLATE_IDS.action_hero,
-		name: "Action Hero",
-		description:
-			"An intense action sequence with a hero fighting through obstacles.",
-		previewImageUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/thumbnails/thumbnail.jpg",
-		previewVideoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/b678c99cb4be4eecbe398063706b0e56/manifest/video.m3u8",
-		providerModelId: "kling-v1-pro",
-		durationSeconds: 45,
-		roles: [
-			{ roleName: "Hero", sortOrder: 0 },
-			{ roleName: "Villain", sortOrder: 1 },
-		],
+		id: SEED_STORYBOARD_IDS.romantic_dance,
+		assetType: "VIDEO",
+		assetKey:
+			"storyboards/romantic_dance/replicate-prediction-bc0za4phsxrm80cttt8rcc7g7r.mp4",
+		posterKey:
+			"storyboards/romantic_dance/Gemini_Generated_Image_8xcs058xcs058xcs.png",
 	},
 	{
-		id: SEED_TEMPLATE_IDS.comedy_duo,
-		name: "Comedy Duo",
-		description:
-			"A hilarious comedy sketch featuring two friends in funny situations.",
-		previewImageUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/thumbnails/thumbnail.jpg",
-		previewVideoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/d1bf534cb4c1917046adcdbf6a638ffa/manifest/video.m3u8",
-		providerModelId: "kling-v1-standard",
-		durationSeconds: 20,
-		roles: [
-			{ roleName: "Comedian A", sortOrder: 0 },
-			{ roleName: "Comedian B", sortOrder: 1 },
-		],
+		id: SEED_VIDEO_IDS.romantic_dance,
+		assetType: "VIDEO",
+		assetKey: "videos/romantic_dance/video.mp4",
 	},
 	{
-		id: SEED_TEMPLATE_IDS.solo_adventure,
-		name: "Solo Adventure",
-		description: "An epic solo journey through stunning landscapes.",
-		previewImageUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/thumbnails/thumbnail.jpg",
-		previewVideoUrl:
-			"https://customer-nmxs5753a01mt0tb.cloudflarestream.com/6e90e37f2ec336c0c355589a3c4f2374/manifest/video.m3u8",
-		providerModelId: "kling-v1-standard",
-		durationSeconds: 60,
-		roles: [{ roleName: "Adventurer", sortOrder: 0 }],
+		id: SEED_VIDEO_IDS.action_hero,
+		assetType: "VIDEO",
+		assetKey: "videos/action_hero/video.mp4",
+	},
+	{
+		id: SEED_VIDEO_IDS.comedy_duo,
+		assetType: "VIDEO",
+		assetKey: "videos/comedy_duo/video.mp4",
+	},
+	{
+		id: SEED_VIDEO_IDS.solo_adventure,
+		assetType: "VIDEO",
+		assetKey: "videos/solo_adventure/video.mp4",
 	},
 ];
 
-const MOCK_CHARACTERS = [
+const MOCK_STORYBOARDS: NewStoryboard[] = [
 	{
-		id: SEED_CHARACTER_IDS.emma,
+		id: SEED_STORYBOARD_IDS.romantic_dance,
+		data: {
+			id: SEED_STORYBOARD_IDS.romantic_dance,
+			title: "Romantic Dance",
+			description: "test storyboard",
+			aspectRatio: "9:16",
+			scenes: [
+				{
+					id: "scene_1",
+					storyboardId: SEED_STORYBOARD_IDS.romantic_dance,
+					order: 1,
+					firstFramePrompt:
+						"Macro close-up of a single teardrop suspended mid-air above wet concrete, nighttime train station background blurred with neon reflections, cinematic lighting, ultra-realistic photography, shallow depth of field, rain atmosphere, vertical 9:16.",
+					scenePrompt:
+						"Subject: a single clear teardrop. \
+Setting: rainy outdoor train station platform at night, wet concrete with neon reflections. \
+Action: the tear falls in slow motion and strikes the puddle, creating a dramatic splash and expanding ripples. \
+Style/Ambiance: cinematic, melancholic, ultra-realistic, high-contrast lighting, cold blue and pink neon tones. \
+Camera/Composition: extreme macro close-up, locked-off camera, shallow depth of field, high-speed slow motion. \
+Audio: heavy rain ambience, soft water impact sound. \
+Negative: no people, no text overlays, no camera shake, no daylight. \
+Duration: 5 seconds, vertical 9:16.",
+					durationSeconds: 5,
+					cameraStyle: "slow dolly-in",
+					locationHint: "in a cozy café",
+					mood: "romantic",
+					audioConfig: {
+						dialogue: [],
+						ambienceTrackKey: "",
+						sfxTrackKey: "",
+					},
+					roles: [],
+				},
+				{
+					id: "scene_2",
+					storyboardId: SEED_STORYBOARD_IDS.romantic_dance,
+					order: 2,
+					firstFramePrompt: "A romantic dance",
+					scenePrompt:
+						"Subject: a young man’s trembling hand holding a soaked train ticket. \
+Setting: neon-lit train station platform under partial shelter at night, rain blowing in from the side. \
+Action: the hand enters frame, trembles from tension, water drips off the fingers, the grip tightens and slightly crumples the ticket. \
+Style/Ambiance: gritty cinematic realism, anxious mood, cold rainy atmosphere. \
+Camera/Composition: tight handheld close-up with subtle micro-shake, shallow depth of field. \
+Audio: rain striking metal roof, faint paper rustle, shallow breathing. \
+Negative: no crowds, no readable text on ticket, no bright daylight, no extreme motion blur. \
+Duration: 5 seconds, vertical 9:16.",
+					durationSeconds: 10,
+					cameraStyle: "slow dolly-in",
+					locationHint: "in a cozy café",
+					mood: "romantic",
+					audioConfig: {
+						dialogue: [],
+						ambienceTrackKey: "",
+						sfxTrackKey: "",
+					},
+					roles: [],
+				},
+			],
+			roles: [],
+			tags: [],
+		},
+		previewVideoAssetId: SEED_STORYBOARD_IDS.romantic_dance,
+	},
+];
+
+const MOCK_ACTORS: NewActor[] = [
+	{
+		id: SEED_ACTOR_IDS.emma,
 		userId: null, // Virtual/system character
 		name: "Emma",
-		imageKey: "characters/virtual/emma.jpg",
-		thumbnailKey: "characters/virtual/emma_thumb.jpg",
+		assetId: SEED_ACTOR_IDS.emma,
 		type: "VIRTUAL" as const,
-		category: "Female",
-	},
-	{
-		id: SEED_CHARACTER_IDS.liam,
-		userId: null,
-		name: "Liam",
-		imageKey: "characters/virtual/liam.jpg",
-		thumbnailKey: "characters/virtual/liam_thumb.jpg",
-		type: "VIRTUAL" as const,
-		category: "Male",
-	},
-	{
-		id: SEED_CHARACTER_IDS.sophia,
-		userId: null,
-		name: "Sophia",
-		imageKey: "characters/virtual/sophia.jpg",
-		thumbnailKey: "characters/virtual/sophia_thumb.jpg",
-		type: "VIRTUAL" as const,
-		category: "Female",
-	},
-	{
-		id: SEED_CHARACTER_IDS.noah,
-		userId: null,
-		name: "Noah",
-		imageKey: "characters/virtual/noah.jpg",
-		thumbnailKey: "characters/virtual/noah_thumb.jpg",
-		type: "VIRTUAL" as const,
-		category: "Male",
-	},
-	{
-		id: SEED_CHARACTER_IDS.olivia,
-		userId: null,
-		name: "Olivia",
-		imageKey: "characters/virtual/olivia.jpg",
-		thumbnailKey: "characters/virtual/olivia_thumb.jpg",
-		type: "VIRTUAL" as const,
-		category: "Female",
-	},
-	{
-		id: SEED_CHARACTER_IDS.james,
-		userId: null,
-		name: "James",
-		imageKey: "characters/virtual/james.jpg",
-		thumbnailKey: "characters/virtual/james_thumb.jpg",
-		type: "VIRTUAL" as const,
-		category: "Male",
 	},
 ];
 
-const MOCK_VIDEOS = [
+const MOCK_VIDEOS: NewVideo[] = [
 	{
 		userId: "seed_storyteller_jane",
-		caption: "My journey through the mountains 🏔️ #adventure #nature",
-		videoFileKey: "041aea9dcec7a96be5dd786080756be9",
+		caption: "My journey through the mountains",
+		assetId: SEED_VIDEO_IDS.romantic_dance,
 		likesCount: 12500,
 		commentsCount: 340,
 		sharesCount: 89,
@@ -188,8 +192,8 @@ const MOCK_VIDEOS = [
 	},
 	{
 		userId: "seed_creative_mike",
-		caption: "Creating art from everyday moments ✨ #creativity #art",
-		videoFileKey: "fbf0cf2d02ec5d6df6537cd8917b5abb",
+		caption: "Creating art from everyday moments",
+		assetId: SEED_VIDEO_IDS.action_hero,
 		likesCount: 8900,
 		commentsCount: 210,
 		sharesCount: 45,
@@ -197,8 +201,8 @@ const MOCK_VIDEOS = [
 	},
 	{
 		userId: "seed_traveler_sarah",
-		caption: "Sunset vibes in Santorini 🌅 #travel #greece",
-		videoFileKey: "c5624ba8ba8dadb2f50a5d4e09a07489",
+		caption: "Sunset vibes in Santorini",
+		assetId: SEED_VIDEO_IDS.comedy_duo,
 		likesCount: 15200,
 		commentsCount: 456,
 		sharesCount: 120,
@@ -206,8 +210,8 @@ const MOCK_VIDEOS = [
 	},
 	{
 		userId: "seed_fitness_alex",
-		caption: "Morning workout routine 💪 #fitness #motivation",
-		videoFileKey: "a151644ca41f371d24c5a777b2e0a087",
+		caption: "Morning workout routine",
+		assetId: SEED_VIDEO_IDS.solo_adventure,
 		likesCount: 9800,
 		commentsCount: 189,
 		sharesCount: 67,
@@ -233,28 +237,40 @@ async function cleanSeedData(db: ReturnType<typeof createDb>) {
 	console.log(`  ✓ Deleted ${deletedUsers.length} users`);
 
 	// Delete seed templates (cascade will handle template_roles)
-	const seedTemplateIds = Object.values(SEED_TEMPLATE_IDS);
-	let deletedTemplatesCount = 0;
-	for (const templateId of seedTemplateIds) {
+	const seedStoryboardIds = Object.values(SEED_STORYBOARD_IDS);
+	let deletedStoryboardsCount = 0;
+	for (const storyboardId of seedStoryboardIds) {
 		const deleted = await db
-			.delete(templates)
-			.where(eq(templates.id, templateId))
-			.returning({ id: templates.id });
-		deletedTemplatesCount += deleted.length;
+			.delete(storyboards)
+			.where(eq(storyboards.id, storyboardId))
+			.returning({ id: storyboards.id });
+		deletedStoryboardsCount += deleted.length;
 	}
-	console.log(`  ✓ Deleted ${deletedTemplatesCount} templates`);
+	console.log(`  ✓ Deleted ${deletedStoryboardsCount} storyboards`);
 
-	// Delete seed virtual characters
-	const seedCharacterIds = Object.values(SEED_CHARACTER_IDS);
-	let deletedCharactersCount = 0;
-	for (const characterId of seedCharacterIds) {
+	// Delete seed virtual actors
+	const seedActorIds = Object.values(SEED_ACTOR_IDS);
+	let deletedActorsCount = 0;
+	for (const actorId of seedActorIds) {
 		const deleted = await db
-			.delete(characters)
-			.where(eq(characters.id, characterId))
-			.returning({ id: characters.id });
-		deletedCharactersCount += deleted.length;
+			.delete(actors)
+			.where(eq(actors.id, actorId))
+			.returning({ id: actors.id });
+		deletedActorsCount += deleted.length;
 	}
-	console.log(`  ✓ Deleted ${deletedCharactersCount} characters`);
+	console.log(`  ✓ Deleted ${deletedActorsCount} actors`);
+
+	// Delete seed assets
+	const seedAssets = Object.values(SEED_ASSETS);
+	let deletedAssetsCount = 0;
+	for (const asset of seedAssets) {
+		const deleted = await db
+			.delete(assets)
+			.where(eq(assets.id, asset.id!))
+			.returning({ id: assets.id });
+		deletedAssetsCount += deleted.length;
+	}
+	console.log(`  ✓ Deleted ${deletedAssetsCount} assets`);
 
 	console.log("");
 }
@@ -274,78 +290,78 @@ async function seed() {
 
 	console.log("🌱 Seeding database...\n");
 
-	// Insert users (upsert to avoid duplicates)
-	console.log("Creating users...");
+	// Insert users
+	console.log("\nCreating users...");
 	for (const userData of MOCK_USERS) {
-		await db
+		const [insertedUser] = await db
 			.insert(user)
-			.values({
-				id: userData.id,
-				name: userData.name,
-				email: userData.email,
-				emailVerified: true,
-				image: userData.image,
-			})
-			.onConflictDoNothing();
-		console.log(`  ✓ User: ${userData.name}`);
+			.values(userData)
+			.onConflictDoNothing()
+			.returning({ id: user.id });
+
+		if (insertedUser) {
+			console.log(`  ✓ User: ${userData.email}`);
+		} else {
+			console.log(`  ⊘ User already exists: ${userData.email}`);
+		}
 	}
 
-	// Insert templates and their roles
-	console.log("\nCreating templates...");
-	for (const templateData of MOCK_TEMPLATES) {
-		const { roles, ...templateFields } = templateData;
+	// Insert a assets
+	console.log("\nCreating assets...");
+	for (const assetData of SEED_ASSETS) {
+		const [insertedAsset] = await db
+			.insert(assets)
+			.values(assetData)
+			.onConflictDoNothing()
+			.returning({ id: assets.id });
 
+		if (insertedAsset) {
+			console.log(`  ✓ Asset: ${assetData.assetKey}`);
+		} else {
+			console.log(`  ⊘ Asset already exists: ${assetData.assetKey}`);
+		}
+	}
+
+	// Insert storyboards
+	console.log("\nCreating storyboards...");
+	for (const storyboardData of MOCK_STORYBOARDS) {
 		// Insert template
-		const [insertedTemplate] = await db
-			.insert(templates)
-			.values(templateFields)
+		const [insertedStoryboard] = await db
+			.insert(storyboards)
+			.values(storyboardData)
 			.onConflictDoNothing()
-			.returning({ id: templates.id });
+			.returning({ id: storyboards.id });
 
-		if (insertedTemplate) {
-			console.log(`  ✓ Template: ${templateData.name}`);
-
-			// Insert roles for this template
-			for (const role of roles) {
-				await db
-					.insert(templateRoles)
-					.values({
-						templateId: insertedTemplate.id,
-						roleName: role.roleName,
-						sortOrder: role.sortOrder,
-					})
-					.onConflictDoNothing();
-			}
-			console.log(`    └─ Roles: ${roles.map((r) => r.roleName).join(", ")}`);
+		if (insertedStoryboard) {
+			console.log(`  ✓ Storyboard: ${storyboardData.data.title}`);
 		} else {
-			console.log(`  ⊘ Template already exists: ${templateData.name}`);
-		}
-	}
-
-	// Insert virtual characters
-	console.log("\nCreating characters...");
-	for (const characterData of MOCK_CHARACTERS) {
-		const [insertedCharacter] = await db
-			.insert(characters)
-			.values(characterData)
-			.onConflictDoNothing()
-			.returning({ id: characters.id });
-
-		if (insertedCharacter) {
 			console.log(
-				`  ✓ Character: ${characterData.name} (${characterData.category})`,
+				`  ⊘ Storyboard already exists: ${storyboardData.data.title}`,
 			);
-		} else {
-			console.log(`  ⊘ Character already exists: ${characterData.name}`);
 		}
 	}
 
-	// Insert videos with staggered publishedAt timestamps for realistic pagination
+	// Insert actors
+	console.log("\nCreating actors...");
+	for (const actorData of MOCK_ACTORS) {
+		const [insertedActor] = await db
+			.insert(actors)
+			.values(actorData)
+			.onConflictDoNothing()
+			.returning({ id: actors.id });
+
+		if (insertedActor) {
+			console.log(`  ✓ Actor: ${actorData.name} (${actorData.type})`);
+		} else {
+			console.log(`  ⊘ Actor already exists: ${actorData.name}`);
+		}
+	}
+
+	// Insert videos
 	console.log("\nCreating videos...");
 	const now = Date.now();
 	for (let i = 0; i < MOCK_VIDEOS.length; i++) {
 		const videoData = MOCK_VIDEOS[i];
-		const { tags, ...videoFields } = videoData;
 
 		// Stagger publishedAt by 1 hour per video (oldest first, newest last)
 		const publishedAt = new Date(now - (MOCK_VIDEOS.length - 1 - i) * 3600000);
@@ -354,24 +370,18 @@ async function seed() {
 		const [insertedVideo] = await db
 			.insert(videos)
 			.values({
-				...videoFields,
-				visibility: "PUBLIC",
+				...videoData,
 				publishedAt,
 			})
 			.returning({ id: videos.id });
 
-		console.log(`  ✓ Video: "${videoData.caption.slice(0, 40)}..."`);
-		console.log(`    └─ Published: ${publishedAt.toISOString()}`);
-
-		// Insert tags for this video
-		if (tags.length > 0 && insertedVideo) {
-			await db.insert(videoTags).values(
-				tags.map((tag) => ({
-					videoId: insertedVideo.id,
-					tag,
-				})),
+		if (insertedVideo) {
+			console.log(`  ✓ Video: "${videoData.caption.slice(0, 40)}..."`);
+			console.log(`    └─ Published: ${publishedAt.toISOString()}`);
+		} else {
+			console.log(
+				`  ⊘ Video already exists: "${videoData.caption.slice(0, 40)}..."`,
 			);
-			console.log(`    └─ Tags: ${tags.join(", ")}`);
 		}
 	}
 
