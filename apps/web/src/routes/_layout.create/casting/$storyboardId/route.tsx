@@ -6,12 +6,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import { useState } from "react";
-import { z } from "zod";
 import { getSessionFn } from "@/lib/auth/session";
 import { presignRead } from "@/lib/presign";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
-import { CastingStep } from "../-components/CastingStep";
-import type { Actor, Storyboard } from "../-types";
+import { CastingStep } from "../../-components/CastingStep";
+import type { Actor, Storyboard } from "../../-types";
 
 type StartGenerationInput = {
 	storyboardId: string;
@@ -46,10 +45,6 @@ async function startVideoGeneration(
 
 	return response.json();
 }
-
-const castingSearchSchema = z.object({
-	storyboardId: z.string(),
-});
 
 const PLACEHOLDER_IMAGE_BASE = "https://api.dicebear.com/7.x/avataaars/svg";
 
@@ -131,17 +126,15 @@ const fetchCastingData = createServerFn()
 		},
 	);
 
-export const Route = createFileRoute("/_layout/create/casting")({
-	validateSearch: (search) => castingSearchSchema.parse(search),
-	loaderDeps: ({ search }) => ({ storyboardId: search.storyboardId }),
-	loader: ({ deps }) =>
-		fetchCastingData({ data: { storyboardId: deps.storyboardId } }),
+export const Route = createFileRoute("/_layout/create/casting/$storyboardId")({
+	loader: ({ params }) =>
+		fetchCastingData({ data: { storyboardId: params.storyboardId } }),
 	component: CastingPage,
 });
 
 function CastingPage() {
 	const navigate = useNavigate();
-	const search = Route.useSearch();
+	const { storyboardId } = Route.useParams();
 	const [assignments, setAssignments] = useState<Record<string, string>>({});
 
 	const { storyboard, actors } = Route.useLoaderData();
@@ -159,9 +152,9 @@ function CastingPage() {
 	});
 
 	const handleGenerate = () => {
-		if (search.storyboardId && Object.keys(assignments).length > 0) {
+		if (storyboardId && Object.keys(assignments).length > 0) {
 			startMutation.mutate({
-				storyboardId: search.storyboardId,
+				storyboardId,
 				assignments, // Record<roleId, characterId>
 			});
 		}
@@ -190,3 +183,4 @@ function CastingPage() {
 		/>
 	);
 }
+

@@ -71,8 +71,8 @@ function TemplatePage() {
 		if (!idToUse) return;
 
 		navigate({
-			to: "/create/casting",
-			search: {
+			to: "/create/casting/$storyboardId",
+			params: {
 				storyboardId: idToUse,
 			},
 		});

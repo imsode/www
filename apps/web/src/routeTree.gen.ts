@@ -23,7 +23,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as LayoutCreateTemplateRouteRouteImport } from './routes/_layout.create/template/route'
 import { Route as LayoutCreateGeneratingRouteRouteImport } from './routes/_layout.create/generating/route'
 import { Route as LayoutCreateCompletedRouteRouteImport } from './routes/_layout.create/completed/route'
-import { Route as LayoutCreateCastingRouteRouteImport } from './routes/_layout.create/casting/route'
+import { Route as LayoutCreateCastingStoryboardIdRouteRouteImport } from './routes/_layout.create/casting/$storyboardId/route'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -97,10 +97,10 @@ const LayoutCreateCompletedRouteRoute =
     path: '/completed',
     getParentRoute: () => LayoutCreateRouteRoute,
   } as any)
-const LayoutCreateCastingRouteRoute =
-  LayoutCreateCastingRouteRouteImport.update({
-    id: '/casting',
-    path: '/casting',
+const LayoutCreateCastingStoryboardIdRouteRoute =
+  LayoutCreateCastingStoryboardIdRouteRouteImport.update({
+    id: '/casting/$storyboardId',
+    path: '/casting/$storyboardId',
     getParentRoute: () => LayoutCreateRouteRoute,
   } as any)
 
@@ -114,11 +114,11 @@ export interface FileRoutesByFullPath {
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
-  '/create/casting': typeof LayoutCreateCastingRouteRoute
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/create/casting/$storyboardId': typeof LayoutCreateCastingStoryboardIdRouteRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -130,11 +130,11 @@ export interface FileRoutesByTo {
   '/templates': typeof LayoutTemplatesRoute
   '/upload': typeof LayoutUploadRoute
   '/': typeof LayoutIndexRoute
-  '/create/casting': typeof LayoutCreateCastingRouteRoute
   '/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/create/template': typeof LayoutCreateTemplateRouteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/create/casting/$storyboardId': typeof LayoutCreateCastingStoryboardIdRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -148,11 +148,11 @@ export interface FileRoutesById {
   '/_layout/templates': typeof LayoutTemplatesRoute
   '/_layout/upload': typeof LayoutUploadRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/create/casting': typeof LayoutCreateCastingRouteRoute
   '/_layout/create/completed': typeof LayoutCreateCompletedRouteRoute
   '/_layout/create/generating': typeof LayoutCreateGeneratingRouteRoute
   '/_layout/create/template': typeof LayoutCreateTemplateRouteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_layout/create/casting/$storyboardId': typeof LayoutCreateCastingStoryboardIdRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -166,11 +166,11 @@ export interface FileRouteTypes {
     | '/templates'
     | '/upload'
     | '/'
-    | '/create/casting'
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
     | '/api/auth/$'
+    | '/create/casting/$storyboardId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -182,11 +182,11 @@ export interface FileRouteTypes {
     | '/templates'
     | '/upload'
     | '/'
-    | '/create/casting'
     | '/create/completed'
     | '/create/generating'
     | '/create/template'
     | '/api/auth/$'
+    | '/create/casting/$storyboardId'
   id:
     | '__root__'
     | '/_layout'
@@ -199,11 +199,11 @@ export interface FileRouteTypes {
     | '/_layout/templates'
     | '/_layout/upload'
     | '/_layout/'
-    | '/_layout/create/casting'
     | '/_layout/create/completed'
     | '/_layout/create/generating'
     | '/_layout/create/template'
     | '/api/auth/$'
+    | '/_layout/create/casting/$storyboardId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -315,28 +315,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCreateCompletedRouteRouteImport
       parentRoute: typeof LayoutCreateRouteRoute
     }
-    '/_layout/create/casting': {
-      id: '/_layout/create/casting'
-      path: '/casting'
-      fullPath: '/create/casting'
-      preLoaderRoute: typeof LayoutCreateCastingRouteRouteImport
+    '/_layout/create/casting/$storyboardId': {
+      id: '/_layout/create/casting/$storyboardId'
+      path: '/casting/$storyboardId'
+      fullPath: '/create/casting/$storyboardId'
+      preLoaderRoute: typeof LayoutCreateCastingStoryboardIdRouteRouteImport
       parentRoute: typeof LayoutCreateRouteRoute
     }
   }
 }
 
 interface LayoutCreateRouteRouteChildren {
-  LayoutCreateCastingRouteRoute: typeof LayoutCreateCastingRouteRoute
   LayoutCreateCompletedRouteRoute: typeof LayoutCreateCompletedRouteRoute
   LayoutCreateGeneratingRouteRoute: typeof LayoutCreateGeneratingRouteRoute
   LayoutCreateTemplateRouteRoute: typeof LayoutCreateTemplateRouteRoute
+  LayoutCreateCastingStoryboardIdRouteRoute: typeof LayoutCreateCastingStoryboardIdRouteRoute
 }
 
 const LayoutCreateRouteRouteChildren: LayoutCreateRouteRouteChildren = {
-  LayoutCreateCastingRouteRoute: LayoutCreateCastingRouteRoute,
   LayoutCreateCompletedRouteRoute: LayoutCreateCompletedRouteRoute,
   LayoutCreateGeneratingRouteRoute: LayoutCreateGeneratingRouteRoute,
   LayoutCreateTemplateRouteRoute: LayoutCreateTemplateRouteRoute,
+  LayoutCreateCastingStoryboardIdRouteRoute:
+    LayoutCreateCastingStoryboardIdRouteRoute,
 }
 
 const LayoutCreateRouteRouteWithChildren =

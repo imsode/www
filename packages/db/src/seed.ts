@@ -24,19 +24,20 @@ const SEED_STORYBOARD_IDS = {
 } as const;
 
 const SEED_ACTOR_IDS = {
-	emma: "00000000-0000-0000-0001-000000000005",
-	liam: "00000000-0000-0000-0001-000000000006",
-	sophia: "00000000-0000-0000-0001-000000000007",
-	noah: "00000000-0000-0000-0001-000000000008",
-	olivia: "00000000-0000-0000-0001-000000000009",
-	james: "00000000-0000-0000-0001-000000000010",
+	emma: "00000000-0000-0000-0001-000000000001",
+	liam: "00000000-0000-0000-0001-000000000002",
+	sophia: "00000000-0000-0000-0001-000000000003",
+	noah: "00000000-0000-0000-0001-000000000004",
+	olivia: "00000000-0000-0000-0001-000000000005",
+	james: "00000000-0000-0000-0001-000000000006",
+	chao_cheng: "00000000-0000-0000-0001-000000000007",
 } as const;
 
 const SEED_VIDEO_IDS = {
-	romantic_dance: "00000000-0000-0000-0000-000000000011",
-	action_hero: "00000000-0000-0000-0000-000000000012",
-	comedy_duo: "00000000-0000-0000-0000-000000000013",
-	solo_adventure: "00000000-0000-0000-0000-000000000014",
+	romantic_dance: "00000000-0000-0000-0002-000000000001",
+	action_hero: "00000000-0000-0000-0002-000000000002",
+	comedy_duo: "00000000-0000-0000-0002-000000000003",
+	solo_adventure: "00000000-0000-0000-0002-000000000004",
 } as const;
 
 const MOCK_USERS: NewUser[] = [
@@ -71,6 +72,11 @@ const SEED_ASSETS: NewAsset[] = [
 		id: SEED_ACTOR_IDS.emma,
 		assetType: "IMAGE",
 		assetKey: "actors/virtual/emma.jpg",
+	},
+	{
+		id: SEED_ACTOR_IDS.chao_cheng,
+		assetType: "IMAGE",
+		assetKey: "actors/user/chao_cheng.jpg",
 	},
 	{
 		id: SEED_STORYBOARD_IDS.romantic_dance,
@@ -355,6 +361,33 @@ async function seed() {
 		} else {
 			console.log(`  ⊘ Actor already exists: ${actorData.name}`);
 		}
+	}
+	// Insert user actors
+	console.log("\nCreating user actors...");
+	// 1. get user id from user table by email
+	const userData = await db
+		.select()
+		.from(user)
+		.where(eq(user.email, "chao@gmail.com"));
+	if (!userData) {
+		throw new Error("User not found");
+	}
+	// 2. insert actor with user id
+	const [insertedActor] = await db
+		.insert(actors)
+		.values({
+			id: SEED_ACTOR_IDS.chao_cheng,
+			userId: userData[0].id,
+			name: "Chao Cheng",
+			assetId: SEED_ACTOR_IDS.chao_cheng,
+			type: "USER_SELFIE" as const,
+		})
+		.onConflictDoNothing()
+		.returning({ id: actors.id });
+	if (insertedActor) {
+		console.log(`  ✓ Actor: Chao Cheng (USER_SELFIE)`);
+	} else {
+		console.log(`  ⊘ Actor already exists: Chao Cheng`);
 	}
 
 	// Insert videos
