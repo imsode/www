@@ -173,20 +173,20 @@ export function AppSidebar({
 	return (
 		<Sidebar
 			collapsible="none"
-			className="w-[calc(var(--sidebar-width-icon)+1px)]! h-screen border-r border-sidebar-border"
+			className="w-[calc(var(--sidebar-width-icon)+10px)]! h-screen border-r border-sidebar-border"
 			{...props}
 		>
 			<SidebarHeader>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
+						<SidebarMenuButton
+							size="lg"
+							asChild
+							className="md:h-8 md:p-0 justify-center"
+						>
 							<a href="/">
 								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
 									<Command className="size-4" />
-								</div>
-								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium">Your Story</span>
-									<span className="truncate text-xs">Stories for you</span>
 								</div>
 							</a>
 						</SidebarMenuButton>
@@ -203,10 +203,12 @@ export function AppSidebar({
 										<SidebarMenuButton
 											isActive={item.label === resolvedActive}
 											tooltip={item.label}
+											className="[&>svg]:size-6"
+											size="lg"
 											asChild
 										>
 											<Link to={item.to}>
-												<item.icon className="h-4 w-4" />
+												<item.icon />
 												<span>{item.label}</span>
 											</Link>
 										</SidebarMenuButton>
@@ -215,8 +217,10 @@ export function AppSidebar({
 											isActive={item.label === resolvedActive}
 											tooltip={item.label}
 											onClick={item.onClick}
+											className="[&>svg]:size-6"
+											size="lg"
 										>
-											<item.icon className="h-4 w-4" />
+											<item.icon />
 											<span>{item.label}</span>
 										</SidebarMenuButton>
 									)}
@@ -236,13 +240,15 @@ export function AppSidebar({
 									<SidebarMenuButton
 										tooltip={item.label}
 										isActive={item.label === resolvedActive}
+										className="[&>svg]:size-6"
+										size="lg"
 										asChild
 									>
 										<Link
 											to={item.to ?? ""}
 											className="flex items-center gap-2 w-full"
 										>
-											<item.icon className="h-4 w-4" />
+											<item.icon />
 											<span>{item.label}</span>
 										</Link>
 									</SidebarMenuButton>
