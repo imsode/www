@@ -1,9 +1,4 @@
-import {
-	createFileRoute,
-	Outlet,
-	redirect,
-	useLocation,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -11,7 +6,6 @@ import { SearchSidebar } from "@/components/SearchSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/lib/auth/auth-client";
-import { getSessionFn } from "@/lib/auth/session";
 
 export const Route = createFileRoute("/_layout")({
 	// beforeLoad: async ({ location }) => {
@@ -103,7 +97,7 @@ function Layout() {
 				<SidebarProvider
 					style={
 						{
-							"--sidebar-width": "20rem",
+							"--sidebar-width": "350px",
 							"--sidebar-width-mobile": "0",
 						} as React.CSSProperties
 					}

@@ -3,6 +3,7 @@ import {
 	Bell,
 	Bookmark,
 	ChevronsUpDown,
+	Command,
 	Home,
 	LayoutGrid,
 	LogOut,
@@ -25,7 +26,6 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
@@ -33,7 +33,6 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Spinner } from "@/components/ui/spinner";
 import { signOut, useSession } from "@/lib/auth/auth-client";
 import { Route as CreateRoute } from "@/routes/_layout.create/route";
 import { Route as IndexRoute } from "@/routes/_layout.index";
@@ -69,7 +68,7 @@ function UserMenu() {
 				.join("")
 				.toUpperCase()
 				.slice(0, 2)
-		: user.email?.[0]?.toUpperCase() ?? "U";
+		: (user.email?.[0]?.toUpperCase() ?? "U");
 
 	const handleSignOut = async () => {
 		await signOut({
@@ -86,7 +85,7 @@ function UserMenu() {
 			<DropdownMenuTrigger asChild>
 				<SidebarMenuButton
 					size="lg"
-					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground p-0"
 				>
 					<Avatar className="h-8 w-8 rounded-lg">
 						<AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
@@ -112,7 +111,10 @@ function UserMenu() {
 				<DropdownMenuLabel className="p-0 font-normal">
 					<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 						<Avatar className="h-8 w-8 rounded-lg">
-							<AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+							<AvatarImage
+								src={user.image ?? undefined}
+								alt={user.name ?? ""}
+							/>
 							<AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
 						</Avatar>
 						<div className="grid flex-1 text-left text-sm leading-tight">
@@ -169,31 +171,30 @@ export function AppSidebar({
 	];
 
 	return (
-		<Sidebar collapsible="icon" className="border-r border-gray-200" {...props}>
-			<SidebarHeader className="flex items-center gap-3 px-4 py-4">
+		<Sidebar
+			collapsible="none"
+			className="w-[calc(var(--sidebar-width-icon)+1px)]! h-screen border-r border-sidebar-border"
+			{...props}
+		>
+			<SidebarHeader>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton size="lg" asChild>
+						<SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
 							<a href="/">
 								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-									<img
-										src="/logo192.png"
-										alt="Your Story logo"
-										className="size-4 rounded-sm object-cover"
-									/>
+									<Command className="size-4" />
 								</div>
-								<div className="flex flex-col gap-0.5 leading-none">
-									<span className="font-medium">Your Story</span>
-									<span className="">Stories for you</span>
+								<div className="grid flex-1 text-left text-sm leading-tight">
+									<span className="truncate font-medium">Your Story</span>
+									<span className="truncate text-xs">Stories for you</span>
 								</div>
 							</a>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarHeader>
-			<SidebarContent>
+			<SidebarContent className="justify-center">
 				<SidebarGroup>
-					<SidebarGroupLabel>Menu</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{primaryNav.map((item) => (
@@ -228,7 +229,6 @@ export function AppSidebar({
 				<SidebarSeparator className="mx-0" />
 
 				<SidebarGroup>
-					<SidebarGroupLabel>You</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{personalNav.map((item) => (

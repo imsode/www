@@ -46,8 +46,6 @@ async function startVideoGeneration(
 	return response.json();
 }
 
-const PLACEHOLDER_IMAGE_BASE = "https://api.dicebear.com/7.x/avataaars/svg";
-
 // Use createServerFn to access database directly - this runs ONLY on the server
 const fetchCastingData = createServerFn()
 	.inputValidator((data: { storyboardId: string }) => data)
@@ -183,4 +181,3 @@ function CastingPage() {
 		/>
 	);
 }
-
