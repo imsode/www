@@ -24,6 +24,9 @@ export type FeedVideo = {
 	thumbnail: string;
 	videoUrl: string;
 	tags: string[];
+	// For Remake feature
+	storyboardId?: string;
+	isTemplate?: boolean;
 };
 
 export type VideoFeedHandle = {
@@ -38,6 +41,7 @@ export type VerticalVideoFeedProps = {
 	likedVideos: Set<string>;
 	onLike: (videoId: string) => void;
 	onEndReached?: () => void;
+	onRemake?: (storyboardId: string, thumbnail: string) => void;
 	className?: string;
 };
 
@@ -52,6 +56,7 @@ export const VerticalVideoFeed = forwardRef<
 		likedVideos,
 		onLike,
 		onEndReached,
+		onRemake,
 		className,
 	},
 	ref,
@@ -273,6 +278,12 @@ export const VerticalVideoFeed = forwardRef<
 									onLike={() => onLike(video.id)}
 									onPrev={handlePrev}
 									onNext={handleNext}
+									storyboardId={video.storyboardId}
+									onRemake={
+										video.storyboardId && onRemake
+											? () => onRemake(video.storyboardId!, video.thumbnail)
+											: undefined
+									}
 									className="lg:hidden z-20"
 								/>
 							</div>

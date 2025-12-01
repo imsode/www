@@ -1,7 +1,7 @@
+import { Link } from "@tanstack/react-router";
 import { Check, Download, Home, RefreshCw, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 
 interface CompletedStepProps {
 	videoUrl: string;

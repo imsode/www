@@ -4,6 +4,7 @@ import {
 	Heart,
 	MessageCircle,
 	Share2,
+	Sparkles,
 } from "lucide-react";
 import type { ElementType } from "react";
 
@@ -17,6 +18,7 @@ type ActionConfig = {
 	Icon: ElementType;
 	onClick?: () => void;
 	getIconClass: (variant: "overlay" | "sidebar") => string;
+	highlight?: boolean;
 };
 
 type VideoActionsProps = {
@@ -31,6 +33,9 @@ type VideoActionsProps = {
 	onPrev: () => void;
 	onNext: () => void;
 	className?: string;
+	// For Remake feature
+	storyboardId?: string;
+	onRemake?: () => void;
 };
 
 export function VideoActions({
@@ -45,6 +50,8 @@ export function VideoActions({
 	onPrev,
 	onNext,
 	className,
+	storyboardId,
+	onRemake,
 }: VideoActionsProps) {
 	const isOverlay = layout === "overlay";
 
@@ -109,6 +116,22 @@ export function VideoActions({
 					? "h-8 w-8 text-white fill-white drop-shadow-md"
 					: "h-6 w-6 text-white fill-white",
 		},
+		// Remake action - only shown when storyboardId is available
+		...(storyboardId && onRemake
+			? [
+					{
+						key: "remake",
+						label: "Remake",
+						Icon: Sparkles,
+						onClick: onRemake,
+						highlight: true,
+						getIconClass: (variant: "overlay" | "sidebar") =>
+							variant === "overlay"
+								? "h-8 w-8 text-purple-400 drop-shadow-md"
+								: "h-6 w-6 text-purple-400",
+					},
+				]
+			: []),
 	];
 
 	const Container = isOverlay ? "div" : "aside";
@@ -134,22 +157,41 @@ export function VideoActions({
 			</div>
 
 			<div className={actionWrapper}>
-				{actionItems.map(({ key, label, Icon, onClick, getIconClass }) => {
-					const Wrapper = onClick ? "button" : "div";
-					return (
-						<Wrapper
-							key={key}
-							type={onClick ? "button" : undefined}
-							onClick={onClick}
-							className="flex flex-col items-center gap-1 cursor-pointer group"
-						>
-							<div className={actionCircle}>
-								<Icon className={getIconClass(layout)} />
-							</div>
-							<span className={actionLabel}>{label}</span>
-						</Wrapper>
-					);
-				})}
+				{actionItems.map(
+					({ key, label, Icon, onClick, getIconClass, highlight }) => {
+						const Wrapper = onClick ? "button" : "div";
+						return (
+							<Wrapper
+								key={key}
+								type={onClick ? "button" : undefined}
+								onClick={onClick}
+								className="flex flex-col items-center gap-1 cursor-pointer group"
+							>
+								<div
+									className={cn(
+										actionCircle,
+										highlight &&
+											layout === "sidebar" &&
+											"bg-purple-500/20 hover:bg-purple-500/30 ring-1 ring-purple-500/50",
+										highlight &&
+											layout === "overlay" &&
+											"bg-purple-500/30 rounded-full p-2",
+									)}
+								>
+									<Icon className={getIconClass(layout)} />
+								</div>
+								<span
+									className={cn(
+										actionLabel,
+										highlight && "text-purple-400",
+									)}
+								>
+									{label}
+								</span>
+							</Wrapper>
+						);
+					},
+				)}
 			</div>
 
 			<div className={navWrapper}>

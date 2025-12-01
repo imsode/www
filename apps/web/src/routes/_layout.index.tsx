@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RemakeDialog } from "@/components/create/RemakeDialog";
 import {
 	VerticalVideoFeed,
 	type VideoFeedHandle,
@@ -13,6 +14,12 @@ function FeedPage() {
 	const [activeVideoIndex, setActiveVideoIndex] = useState(0);
 	const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
 	const feedRef = useRef<VideoFeedHandle | null>(null);
+
+	// Remake dialog state
+	const [remakeState, setRemakeState] = useState<{
+		storyboardId: string;
+		thumbnail: string;
+	} | null>(null);
 
 	const { videos, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useFeedVideos();
@@ -67,6 +74,13 @@ function FeedPage() {
 		setActiveVideoIndex((prev) => (prev === videos.length - 1 ? 0 : prev + 1));
 	}, [videos.length]);
 
+	const handleRemake = useCallback(
+		(storyboardId: string, thumbnail: string) => {
+			setRemakeState({ storyboardId, thumbnail });
+		},
+		[],
+	);
+
 	return (
 		// Use 100dvh to ensure we use the full dynamic viewport height, preventing bottom bar issues on mobile
 		<div className="flex flex-col h-[100dvh] bg-black text-white overflow-hidden pb-[3.5rem] sm:pb-0">
@@ -81,6 +95,7 @@ function FeedPage() {
 						likedVideos={likedVideos}
 						onLike={handleLike}
 						onEndReached={handleEndReached}
+						onRemake={handleRemake}
 						className="h-full w-full"
 					/>
 				</div>
@@ -98,12 +113,30 @@ function FeedPage() {
 							onLike={() => handleLike(currentVideo.id)}
 							onPrev={goPrev}
 							onNext={goNext}
+							storyboardId={currentVideo.storyboardId}
+							onRemake={
+								currentVideo.storyboardId
+									? () =>
+											handleRemake(
+												currentVideo.storyboardId!,
+												currentVideo.thumbnail,
+											)
+									: undefined
+							}
 							layout="sidebar"
 							className="bg-transparent w-auto text-white/90"
 						/>
 					</div>
 				)}
 			</div>
+
+			{/* Remake Dialog */}
+			<RemakeDialog
+				open={!!remakeState}
+				onOpenChange={(open) => !open && setRemakeState(null)}
+				storyboardId={remakeState?.storyboardId ?? ""}
+				videoThumbnail={remakeState?.thumbnail}
+			/>
 		</div>
 	);
 }

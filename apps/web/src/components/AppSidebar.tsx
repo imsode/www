@@ -7,10 +7,11 @@ import {
 	Home,
 	LayoutGrid,
 	LogOut,
+	Plus,
 	Search,
-	Upload,
 } from "lucide-react";
-import type { ElementType } from "react";
+import { type ElementType, useState } from "react";
+import { CreateVideoDialog } from "@/components/create/CreateVideoDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -34,7 +35,6 @@ import {
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { signOut, useSession } from "@/lib/auth/auth-client";
-import { Route as CreateRoute } from "@/routes/_layout.create/route";
 import { Route as IndexRoute } from "@/routes/_layout.index";
 import { Route as MyVideosRoute } from "@/routes/_layout.my-videos";
 import { Route as TemplatesRoute } from "@/routes/_layout.templates";
@@ -151,10 +151,10 @@ export function AppSidebar({
 }: { activeItem?: string; onSearchClick?: () => void } & React.ComponentProps<
 	typeof Sidebar
 >) {
+	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 	const { location } = useRouterState();
 	const pathMap: Record<string, string> = {
 		"/": "Shorts",
-		"/create": "Create",
 	};
 	const resolvedActive = pathMap[location.pathname] ?? activeItem;
 
@@ -166,11 +166,11 @@ export function AppSidebar({
 
 	const personalNav: NavItem[] = [
 		{ label: "My Videos", icon: Bookmark, to: MyVideosRoute.to },
-		{ label: "Create", icon: Upload, to: CreateRoute.to },
 		{ label: "Templates", icon: LayoutGrid, to: TemplatesRoute.to },
 	];
 
 	return (
+		<>
 		<Sidebar
 			collapsible="none"
 			className="w-[calc(var(--sidebar-width-icon)+10px)]! h-screen border-r border-sidebar-border"
@@ -232,6 +232,27 @@ export function AppSidebar({
 
 				<SidebarSeparator className="mx-0" />
 
+				{/* Prominent Create Button */}
+				<SidebarGroup>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Create"
+									onClick={() => setIsCreateDialogOpen(true)}
+									className="[&>svg]:size-5 bg-white text-black hover:bg-white/90 rounded-full"
+									size="lg"
+								>
+									<Plus className="stroke-[2.5]" />
+									<span className="font-semibold">Create</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarSeparator className="mx-0" />
+
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -267,5 +288,10 @@ export function AppSidebar({
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
+		<CreateVideoDialog
+			open={isCreateDialogOpen}
+			onOpenChange={setIsCreateDialogOpen}
+		/>
+		</>
 	);
 }

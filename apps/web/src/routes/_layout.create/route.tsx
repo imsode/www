@@ -1,22 +1,12 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// DEPRECATED: The create flow is now dialog-based.
+// All /create/* routes redirect to home.
+// The CreateVideoDialog can be opened from the sidebar or mobile nav.
 export const Route = createFileRoute("/_layout/create")({
-	component: CreateLayout,
-	beforeLoad: ({ location }) => {
-		if (location.pathname === "/create" || location.pathname === "/create/") {
-			throw redirect({
-				to: "/create/template",
-			});
-		}
+	beforeLoad: () => {
+		throw redirect({
+			to: "/",
+		});
 	},
 });
-
-function CreateLayout() {
-	return (
-		<div className="flex flex-col min-h-[calc(100vh-4rem)] bg-neutral-50">
-			<div className="flex-1 flex flex-col">
-				<Outlet />
-			</div>
-		</div>
-	);
-}

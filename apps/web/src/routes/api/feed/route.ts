@@ -1,9 +1,10 @@
 import { env } from "cloudflare:workers";
 import { createDb } from "@repo/db/client";
-import { assets, user, videos } from "@repo/db/schema";
+import { assets, storyboards, user, videos } from "@repo/db/schema";
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
-import { and, desc, eq, inArray, isNotNull, lt, or } from "drizzle-orm";
+import { and, desc, eq, isNotNull, lt, or } from "drizzle-orm";
+import { presignRead } from "@/lib/presign";
 
 export type FeedVideo = {
 	id: string;
@@ -16,6 +17,9 @@ export type FeedVideo = {
 	thumbnail: string;
 	videoUrl: string;
 	tags: string[];
+	// New fields for Remake feature
+	storyboardId?: string;
+	isTemplate?: boolean;
 };
 
 export type FeedPage = {
@@ -103,8 +107,8 @@ export const Route = createFileRoute("/api/feed")({
 					? videoResults.slice(0, PAGE_SIZE)
 					: videoResults;
 
-				// Transform to FeedVideo format
-				const feedVideos: FeedVideo[] = videosToReturn.map((video) => ({
+				// Transform user videos to FeedVideo format
+				const userFeedVideos: FeedVideo[] = videosToReturn.map((video) => ({
 					id: video.id,
 					username: video.userName,
 					avatar:
@@ -119,7 +123,71 @@ export const Route = createFileRoute("/api/feed")({
 						: `${CLOUDFLARE_STREAM_BASE_URL}/${video.assetKey}/thumbnails/thumbnail.jpg`,
 					videoUrl: `${CLOUDFLARE_STREAM_BASE_URL}/${video.assetKey}/manifest/video.m3u8`,
 					tags: video.tags,
+					isTemplate: false,
 				}));
+
+				// Fetch storyboard templates to mix into feed (only on first page)
+				let templateVideos: FeedVideo[] = [];
+				if (!cursorParam) {
+					const storyboardResults = await db
+						.select({
+							id: storyboards.id,
+							data: storyboards.data,
+							assetKey: assets.assetKey,
+							posterKey: assets.posterKey,
+						})
+						.from(storyboards)
+						.innerJoin(assets, eq(storyboards.previewVideoAssetId, assets.id));
+
+					templateVideos = await Promise.all(
+						storyboardResults.map(async (sb) => {
+							const [posterUrl, videoUrl] = await Promise.all([
+								sb.posterKey
+									? presignRead({ data: { key: sb.posterKey } })
+									: presignRead({ data: { key: sb.assetKey } }),
+								presignRead({ data: { key: sb.assetKey } }),
+							]);
+
+							return {
+								id: `template-${sb.id}`,
+								username: "Templates",
+								avatar: "https://api.dicebear.com/7.x/shapes/svg?seed=templates",
+								caption: sb.data.title,
+								likes: 0,
+								comments: 0,
+								shares: 0,
+								thumbnail: posterUrl.url,
+								videoUrl: videoUrl.url,
+								tags: sb.data.tags,
+								storyboardId: sb.id,
+								isTemplate: true,
+							};
+						}),
+					);
+				}
+
+				// Interleave templates with user videos (every 3rd position)
+				const feedVideos: FeedVideo[] = [];
+				let templateIndex = 0;
+
+				for (let i = 0; i < userFeedVideos.length; i++) {
+					// Insert a template every 3 videos (at positions 2, 5, 8, etc.)
+					if (
+						(i + 1) % 3 === 0 &&
+						templateIndex < templateVideos.length &&
+						!cursorParam
+					) {
+						feedVideos.push(templateVideos[templateIndex]);
+						templateIndex++;
+					}
+					feedVideos.push(userFeedVideos[i]);
+				}
+
+				// Add remaining templates at the end if we have space
+				while (templateIndex < templateVideos.length && !cursorParam) {
+					feedVideos.push(templateVideos[templateIndex]);
+					templateIndex++;
+				}
 
 				// Build next cursor from the last video
 				// publishedAt is guaranteed non-null by the isNotNull filter in the query
