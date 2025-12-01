@@ -7,7 +7,7 @@ import {
 	type NewGeneration,
 	storyboards,
 } from "@repo/db/schema";
-import type { GenerationRequest, GenerationRoleBinding } from "@repo/types";
+import type { GenerationRequest } from "@repo/types";
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { eq, inArray } from "drizzle-orm";
