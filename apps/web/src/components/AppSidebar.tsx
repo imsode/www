@@ -171,127 +171,127 @@ export function AppSidebar({
 
 	return (
 		<>
-		<Sidebar
-			collapsible="none"
-			className="w-[calc(var(--sidebar-width-icon)+10px)]! h-screen border-r border-sidebar-border"
-			{...props}
-		>
-			<SidebarHeader>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							size="lg"
-							asChild
-							className="md:h-8 md:p-0 justify-center"
-						>
-							<a href="/">
-								<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-									<Command className="size-4" />
-								</div>
-							</a>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarHeader>
-			<SidebarContent className="justify-center">
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{primaryNav.map((item) => (
-								<SidebarMenuItem key={item.label}>
-									{item.to ? (
+			<Sidebar
+				collapsible="none"
+				className="w-[calc(var(--sidebar-width-icon)+10px)]! h-screen border-r border-sidebar-border"
+				{...props}
+			>
+				<SidebarHeader>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								size="lg"
+								asChild
+								className="md:h-8 md:p-0 justify-center"
+							>
+								<a href="/">
+									<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+										<Command className="size-4" />
+									</div>
+								</a>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarHeader>
+				<SidebarContent className="justify-center">
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{primaryNav.map((item) => (
+									<SidebarMenuItem key={item.label}>
+										{item.to ? (
+											<SidebarMenuButton
+												isActive={item.label === resolvedActive}
+												tooltip={item.label}
+												className="[&>svg]:size-6"
+												size="lg"
+												asChild
+											>
+												<Link to={item.to}>
+													<item.icon />
+													<span>{item.label}</span>
+												</Link>
+											</SidebarMenuButton>
+										) : (
+											<SidebarMenuButton
+												isActive={item.label === resolvedActive}
+												tooltip={item.label}
+												onClick={item.onClick}
+												className="[&>svg]:size-6"
+												size="lg"
+											>
+												<item.icon />
+												<span>{item.label}</span>
+											</SidebarMenuButton>
+										)}
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					<SidebarSeparator className="mx-0" />
+
+					{/* Prominent Create Button */}
+					<SidebarGroup>
+						<SidebarGroupContent className="flex justify-center">
+							<SidebarMenu className="w-auto">
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										tooltip="Create"
+										onClick={() => setIsCreateDialogOpen(true)}
+										className="[&>svg]:size-4 bg-white text-black hover:bg-white/90 rounded-full w-10 h-10 p-0 justify-center"
+										size="lg"
+									>
+										<Plus className="stroke-[2.5]" />
+										<span className="sr-only">Create</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+
+					<SidebarSeparator className="mx-0" />
+
+					<SidebarGroup>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{personalNav.map((item) => (
+									<SidebarMenuItem key={item.label}>
 										<SidebarMenuButton
-											isActive={item.label === resolvedActive}
 											tooltip={item.label}
+											isActive={item.label === resolvedActive}
 											className="[&>svg]:size-6"
 											size="lg"
 											asChild
 										>
-											<Link to={item.to}>
+											<Link
+												to={item.to ?? ""}
+												className="flex items-center gap-2 w-full"
+											>
 												<item.icon />
 												<span>{item.label}</span>
 											</Link>
 										</SidebarMenuButton>
-									) : (
-										<SidebarMenuButton
-											isActive={item.label === resolvedActive}
-											tooltip={item.label}
-											onClick={item.onClick}
-											className="[&>svg]:size-6"
-											size="lg"
-										>
-											<item.icon />
-											<span>{item.label}</span>
-										</SidebarMenuButton>
-									)}
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-
-				<SidebarSeparator className="mx-0" />
-
-				{/* Prominent Create Button */}
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									tooltip="Create"
-									onClick={() => setIsCreateDialogOpen(true)}
-									className="[&>svg]:size-5 bg-white text-black hover:bg-white/90 rounded-full"
-									size="lg"
-								>
-									<Plus className="stroke-[2.5]" />
-									<span className="font-semibold">Create</span>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-
-				<SidebarSeparator className="mx-0" />
-
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{personalNav.map((item) => (
-								<SidebarMenuItem key={item.label}>
-									<SidebarMenuButton
-										tooltip={item.label}
-										isActive={item.label === resolvedActive}
-										className="[&>svg]:size-6"
-										size="lg"
-										asChild
-									>
-										<Link
-											to={item.to ?? ""}
-											className="flex items-center gap-2 w-full"
-										>
-											<item.icon />
-											<span>{item.label}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-			</SidebarContent>
-			<SidebarFooter>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<UserMenu />
-					</SidebarMenuItem>
-				</SidebarMenu>
-			</SidebarFooter>
-			<SidebarRail />
-		</Sidebar>
-		<CreateVideoDialog
-			open={isCreateDialogOpen}
-			onOpenChange={setIsCreateDialogOpen}
-		/>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				</SidebarContent>
+				<SidebarFooter>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<UserMenu />
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarFooter>
+				<SidebarRail />
+			</Sidebar>
+			<CreateVideoDialog
+				open={isCreateDialogOpen}
+				onOpenChange={setIsCreateDialogOpen}
+			/>
 		</>
 	);
 }
