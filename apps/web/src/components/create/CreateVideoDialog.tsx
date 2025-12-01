@@ -29,7 +29,6 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 } from "@/components/ui/drawer";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSessionFn } from "@/lib/auth/session";
 import { presignRead } from "@/lib/presign";
@@ -187,7 +186,7 @@ function TemplateCard({
 			aria-pressed={isSelected}
 			aria-label={`Select ${storyboard.name}`}
 			className={cn(
-				"group relative aspect-[9/16] rounded-lg overflow-hidden border-2 transition-all",
+				"group relative w-full aspect-[9/16] rounded-lg overflow-hidden border-2 transition-all",
 				isSelected
 					? "border-white ring-2 ring-white/30 scale-[1.02]"
 					: "border-transparent hover:border-white/40 opacity-70 hover:opacity-100",
@@ -455,19 +454,17 @@ function CreateVideoContent({ onClose }: { onClose: () => void }) {
 					<Video className="w-4 h-4" />
 					Choose Template
 				</h3>
-				<ScrollArea className="w-full h-72">
-					<div className="flex gap-2 pb-2">
-						{storyboardsData.map((storyboard) => (
-							<div key={storyboard.id} className="w-20 shrink-0">
-								<TemplateCard
-									storyboard={storyboard}
-									isSelected={selectedStoryboardId === storyboard.id}
-									onSelect={() => setSelectedStoryboardId(storyboard.id)}
-								/>
-							</div>
-						))}
-					</div>
-				</ScrollArea>
+				<div className="flex gap-3 overflow-x-auto pb-2">
+					{storyboardsData.map((storyboard) => (
+						<div key={storyboard.id} className="w-28 shrink-0">
+							<TemplateCard
+								storyboard={storyboard}
+								isSelected={selectedStoryboardId === storyboard.id}
+								onSelect={() => setSelectedStoryboardId(storyboard.id)}
+							/>
+						</div>
+					))}
+				</div>
 			</div>
 
 			{/* Role Casting */}
