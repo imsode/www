@@ -62,17 +62,17 @@ export type Role = {
 // Video Generation
 // ================================
 
-export type GenerationRoleBinding = {
-	roleId: string; // from Scene.roles[i].id
-	roleName: string; // from Scene.roles[i].name
-	displayName: string; // from Scene.roles[i].displayName
-	description?: string; // from Scene.roles[i].description
+export type Actor = {
+	id: string;
+	name: string;
+	image: {
+		key: string;
+	};
+};
 
-	// User-specific inputs ↓
-	faceImageUrl?: string; // user’s selfie / face ref
-	refVideoUrl?: string; // optional: driving video
-	voiceId?: string; // if you do TTS per role later
-	ttsStyle?: string; // calm, angry, whispering
+export type GenerationRoleBinding = {
+	role: Role;
+	actor?: Actor;
 };
 
 export type GenerationSceneSpec = {
@@ -104,12 +104,6 @@ export type GenerationRequest = {
 	userId: string;
 
 	aspectRatio: AspectRatio; // from Storyboard.aspectRatio
-	resolution: {
-		// derived from aspectRatio + preset
-		width: number;
-		height: number;
-	};
-	fps: number;
 
 	model: "wan-2.2" | "wan-2.5" | "kling" | "sora-proxy" | string;
 	outputFormat: "mp4" | "mov";

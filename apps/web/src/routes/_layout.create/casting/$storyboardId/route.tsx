@@ -14,7 +14,7 @@ import type { Actor, Storyboard } from "../../-types";
 
 type StartGenerationInput = {
 	storyboardId: string;
-	assignments: Record<string, string>; // roleId -> characterId
+	assignments: Record<string, string>; // roleId -> actorId
 };
 
 async function startVideoGeneration(
@@ -22,7 +22,7 @@ async function startVideoGeneration(
 ): Promise<StartGenerationResponse> {
 	// Convert Record to array format expected by the API
 	const assignments = Object.entries(input.assignments).map(
-		([roleId, characterId]) => ({ roleId, characterId }),
+		([roleId, actorId]) => ({ roleId, actorId }),
 	);
 
 	const response = await fetch("/api/generations", {
@@ -117,6 +117,7 @@ const fetchCastingData = createServerFn()
 				actors: actorResults.map((a) => ({
 					id: a.id,
 					name: a.name,
+					assetKey: a.assetKey,
 					imageUrl: imageUrl.url,
 					isUser: a.type === "USER_SELFIE",
 				})),
@@ -183,8 +184,8 @@ function CastingPage() {
 			storyboard={storyboard}
 			actors={actors}
 			assignments={assignments}
-			onAssign={(roleId, charId) =>
-				setAssignments((prev) => ({ ...prev, [roleId]: charId }))
+			onAssign={(roleId, actorId) =>
+				setAssignments((prev) => ({ ...prev, [roleId]: actorId }))
 			}
 			onGenerate={handleGenerate}
 			onBack={handleBack}

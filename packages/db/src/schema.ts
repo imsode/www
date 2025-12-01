@@ -168,9 +168,9 @@ export const generations = pgTable(
 		})
 			.notNull()
 			.default("PENDING"),
-		generatedAssetId: uuid("generated_asset_id")
-			.references(() => assets.id, { onDelete: "restrict" })
-			.notNull(),
+		generatedAssetId: uuid("generated_asset_id").references(() => assets.id, {
+			onDelete: "restrict",
+		}),
 		errorMessage: text("error_message"),
 		createdAt: timestamp("created_at", { withTimezone: true })
 			.defaultNow()
