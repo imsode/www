@@ -113,8 +113,8 @@ const MOCK_STORYBOARDS: NewStoryboard[] = [
 		id: SEED_STORYBOARD_IDS.romantic_dance,
 		data: {
 			id: SEED_STORYBOARD_IDS.romantic_dance,
-			title: "Romantic Dance",
-			description: "test storyboard",
+			title: "Romantic Kiss",
+			description: "A romantic kiss between a man and a woman",
 			aspectRatio: "9:16",
 			scenes: [
 				{
@@ -169,7 +169,20 @@ Duration: 5 seconds, vertical 9:16.",
 					roles: [],
 				},
 			],
-			roles: [],
+			roles: [
+				{
+					id: "role_1",
+					name: "Man",
+					displayName: "Man",
+					description: "The man in the story",
+				},
+				{
+					id: "role_2",
+					name: "Woman",
+					displayName: "Woman",
+					description: "The woman in the story",
+				},
+			],
 			tags: [],
 		},
 		previewVideoAssetId: SEED_STORYBOARD_IDS.romantic_dance,

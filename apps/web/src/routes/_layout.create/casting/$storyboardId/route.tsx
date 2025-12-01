@@ -5,11 +5,11 @@ import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { getSessionFn } from "@/lib/auth/session";
 import { presignRead } from "@/lib/presign";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
-import { CastingStep } from "../../-components/CastingStep";
+import { AUTO_ACTOR_ID, CastingStep } from "../../-components/CastingStep";
 import type { Actor, Storyboard } from "../../-types";
 
 type StartGenerationInput = {
@@ -133,9 +133,20 @@ export const Route = createFileRoute("/_layout/create/casting/$storyboardId")({
 function CastingPage() {
 	const navigate = useNavigate();
 	const { storyboardId } = Route.useParams();
-	const [assignments, setAssignments] = useState<Record<string, string>>({});
-
 	const { storyboard, actors } = Route.useLoaderData();
+
+	// Initialize all roles with "auto" by default
+	const initialAssignments = useMemo(() => {
+		if (!storyboard) return {};
+		const defaults: Record<string, string> = {};
+		for (const role of storyboard.roles) {
+			defaults[role.id] = AUTO_ACTOR_ID;
+		}
+		return defaults;
+	}, [storyboard]);
+
+	const [assignments, setAssignments] =
+		useState<Record<string, string>>(initialAssignments);
 
 	const startMutation = useMutation({
 		mutationFn: (input: StartGenerationInput) => startVideoGeneration(input),
@@ -150,10 +161,11 @@ function CastingPage() {
 	});
 
 	const handleGenerate = () => {
-		if (storyboardId && Object.keys(assignments).length > 0) {
+		if (storyboardId) {
+			// Send assignments including "auto" values - backend will handle AI casting
 			startMutation.mutate({
 				storyboardId,
-				assignments, // Record<roleId, characterId>
+				assignments,
 			});
 		}
 	};

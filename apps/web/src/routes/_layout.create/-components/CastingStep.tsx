@@ -1,4 +1,4 @@
-import { ChevronLeft, Loader2, Play, Plus, User, X } from "lucide-react";
+import { ChevronLeft, Loader2, Play, Plus, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { Actor, Storyboard } from "../-types";
+
+export const AUTO_ACTOR_ID = "auto";
 
 interface CastingStepProps {
 	storyboard: Storyboard;
@@ -39,6 +41,26 @@ function ActorGrid({
 }) {
 	return (
 		<div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+			{/* Auto option - AI picks */}
+			<button
+				type="button"
+				onClick={() => onSelect(AUTO_ACTOR_ID)}
+				className="flex flex-col items-center gap-2 group"
+			>
+				<div className="relative w-20 h-20 rounded-full overflow-hidden">
+					<div className="absolute inset-0 bg-gradient-to-br from-purple-600/40 via-pink-500/30 to-cyan-400/40" />
+					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+					<div className="relative w-full h-full flex items-center justify-center border-2 border-white/20 rounded-full group-hover:border-white/50 transition-all">
+						<Sparkles className="w-8 h-8 text-white/80" />
+					</div>
+				</div>
+				<span className="text-sm text-zinc-300 group-hover:text-white">
+					Auto
+				</span>
+				<span className="text-xs text-zinc-500">AI picks</span>
+			</button>
+
+			{/* User actors */}
 			{actors.map((actor) => (
 				<button
 					key={actor.id}
@@ -55,6 +77,8 @@ function ActorGrid({
 					</span>
 				</button>
 			))}
+
+			{/* Upload option */}
 			<button
 				type="button"
 				onClick={() => toast.info("Upload coming soon!")}
@@ -81,8 +105,13 @@ export function CastingStep({
 }: CastingStepProps) {
 	const [activeRoleId, setActiveRoleId] = useState<string | null>(null);
 	const activeRole = storyboard.roles.find((r) => r.id === activeRoleId);
-	const isComplete = storyboard.roles.every((role) => assignments[role.id]);
 	const isMobile = useIsMobile();
+
+	// Count customized vs auto roles
+	const customizedCount = storyboard.roles.filter(
+		(r) => assignments[r.id] && assignments[r.id] !== AUTO_ACTOR_ID,
+	).length;
+	const autoCount = storyboard.roles.length - customizedCount;
 
 	const handleActorSelect = (actorId: string) => {
 		if (activeRoleId) {
@@ -169,7 +198,10 @@ export function CastingStep({
 							<div className="space-y-4">
 								{storyboard.roles.map((role) => {
 									const assignedId = assignments[role.id];
-									const assignedActor = actors.find((c) => c.id === assignedId);
+									const isAuto = !assignedId || assignedId === AUTO_ACTOR_ID;
+									const assignedActor = isAuto
+										? null
+										: actors.find((c) => c.id === assignedId);
 
 									return (
 										<div key={role.id} className="space-y-2">
@@ -183,7 +215,7 @@ export function CastingStep({
 													"w-full flex items-center gap-4 p-3 rounded-xl border-2 transition-all duration-200 bg-zinc-950 group hover:bg-zinc-900",
 													assignedActor
 														? "border-white/20 hover:border-white/40"
-														: "border-zinc-800 hover:border-zinc-700 border-dashed",
+														: "border-white/10 hover:border-white/30",
 												)}
 											>
 												{assignedActor ? (
@@ -205,15 +237,18 @@ export function CastingStep({
 													</>
 												) : (
 													<>
-														<div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-zinc-600">
-															<User className="w-5 h-5 text-zinc-500" />
+														<div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/20 flex items-center justify-center">
+															<Sparkles className="w-5 h-5 text-purple-300" />
 														</div>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-zinc-400">
-																Select Actor
+															<div className="font-medium text-white flex items-center gap-2">
+																Auto
+																<span className="text-[10px] text-purple-300 bg-purple-500/20 px-1.5 py-0.5 rounded-full">
+																	AI
+																</span>
 															</div>
-															<div className="text-xs text-zinc-500">
-																Tap to assign
+															<div className="text-xs text-zinc-400">
+																Tap to customize
 															</div>
 														</div>
 													</>
@@ -228,6 +263,15 @@ export function CastingStep({
 
 					{/* Footer */}
 					<div className="p-6 border-t border-white/10 bg-zinc-900 z-10">
+						{/* Status indicator */}
+						{autoCount > 0 && (
+							<div className="text-center text-xs text-zinc-400 mb-3 flex items-center justify-center gap-1.5">
+								<Sparkles className="w-3 h-3 text-purple-400" />
+								<span>
+									AI will cast {autoCount} role{autoCount > 1 ? "s" : ""}
+								</span>
+							</div>
+						)}
 						<div className="flex items-center gap-3 w-full">
 							{onBack && (
 								<Button
@@ -242,7 +286,7 @@ export function CastingStep({
 							<Button
 								type="button"
 								onClick={onGenerate}
-								disabled={!isComplete || isGenerating}
+								disabled={isGenerating}
 								className="flex-1 rounded-full bg-white text-black hover:bg-white/90 font-semibold h-12 shadow-lg"
 								size="lg"
 							>
@@ -315,15 +359,17 @@ export function CastingStep({
 							<div className="flex items-center justify-between">
 								<h3 className="text-lg font-bold text-white">Cast Roles</h3>
 								<span className="text-xs text-zinc-400 uppercase tracking-wider font-medium">
-									{storyboard.roles.filter((r) => assignments[r.id]).length} /{" "}
-									{storyboard.roles.length} Ready
+									{customizedCount} custom • {autoCount} auto
 								</span>
 							</div>
 
 							<div className="space-y-3">
 								{storyboard.roles.map((role) => {
 									const assignedId = assignments[role.id];
-									const assignedActor = actors.find((c) => c.id === assignedId);
+									const isAuto = !assignedId || assignedId === AUTO_ACTOR_ID;
+									const assignedActor = isAuto
+										? null
+										: actors.find((c) => c.id === assignedId);
 
 									return (
 										<div key={role.id} className="space-y-1.5">
@@ -337,7 +383,7 @@ export function CastingStep({
 													"w-full flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 relative overflow-hidden",
 													assignedActor
 														? "bg-white/10 border-white/20"
-														: "bg-white/5 border-white/5 border-dashed hover:bg-white/10",
+														: "bg-white/5 border-white/10 hover:bg-white/10",
 												)}
 											>
 												{assignedActor ? (
@@ -359,13 +405,19 @@ export function CastingStep({
 													</>
 												) : (
 													<>
-														<div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-															<User className="w-4 h-4 text-zinc-500" />
+														<div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-white/20 flex items-center justify-center">
+															<Sparkles className="w-4 h-4 text-purple-300" />
 														</div>
 														<div className="flex-1 text-left">
-															<div className="font-medium text-zinc-400 text-sm">
-																Tap to cast
+															<div className="font-medium text-white text-sm flex items-center gap-1.5">
+																Auto
+																<span className="text-[9px] text-purple-300 bg-purple-500/20 px-1 py-0.5 rounded-full">
+																	AI
+																</span>
 															</div>
+														</div>
+														<div className="text-xs text-white/50 px-2">
+															Customize
 														</div>
 													</>
 												)}
@@ -378,10 +430,19 @@ export function CastingStep({
 
 						{/* Footer Action */}
 						<div className="p-4 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent">
+							{/* Status indicator */}
+							{autoCount > 0 && (
+								<div className="text-center text-xs text-zinc-400 mb-3 flex items-center justify-center gap-1.5">
+									<Sparkles className="w-3 h-3 text-purple-400" />
+									<span>
+										AI will cast {autoCount} role{autoCount > 1 ? "s" : ""}
+									</span>
+								</div>
+							)}
 							<Button
 								type="button"
 								onClick={onGenerate}
-								disabled={!isComplete || isGenerating}
+								disabled={isGenerating}
 								className="w-full rounded-full shadow-lg h-12 text-base bg-white text-black hover:bg-white/90 font-bold"
 								size="lg"
 							>
