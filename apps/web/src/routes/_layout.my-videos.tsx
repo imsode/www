@@ -99,9 +99,9 @@ const fetchUserGenerations = createServerFn().handler(
 				// If completed, get presigned URLs
 				if (gen.status === "COMPLETED" && gen.assetKey) {
 					const [video, poster] = await Promise.all([
-						presignRead({ data: { key: gen.assetKey } }),
+						presignRead({ key: gen.assetKey }),
 						gen.posterKey
-							? presignRead({ data: { key: gen.posterKey } })
+							? presignRead({ key: gen.posterKey })
 							: Promise.resolve({ url: "" }),
 					]);
 					item.videoUrl = video.url;

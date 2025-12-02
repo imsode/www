@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSessionHelper } from "@/lib/auth/session";
-import { presignReadHelper } from "@/lib/presign";
+import { presignRead } from "@/lib/presign";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
 
 // Types
@@ -81,10 +81,10 @@ const fetchStoryboardById = createServerFn()
 
 			const storyboard = result[0];
 			const [image, video] = await Promise.all([
-				presignReadHelper({
+				presignRead({
 					key: storyboard.previewVideoAssetPosterKey as string,
 				}),
-				presignReadHelper({ key: storyboard.previewVideoAssetKey }),
+				presignRead({ key: storyboard.previewVideoAssetKey }),
 			]);
 
 			return {
@@ -127,7 +127,7 @@ const fetchActors = createServerFn().handler(async (): Promise<Actor[]> => {
 
 	return await Promise.all(
 		actorResults.map(async (actor) => {
-			const imageUrl = await presignReadHelper({
+			const imageUrl = await presignRead({
 				key: actor.assetKey as string,
 			});
 			return {

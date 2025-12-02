@@ -1,5 +1,4 @@
 import { env } from "cloudflare:workers";
-import { createServerFn } from "@tanstack/react-start";
 import { AwsClient } from "aws4fetch";
 import { z } from "zod";
 
@@ -21,7 +20,7 @@ export type PresignReadResponse = {
  * Pure helper function that generates an R2 presigned GET URL for reads.
  * Can be called directly from server-side code (API routes, other server functions).
  */
-export async function presignReadHelper(
+export async function presignRead(
 	input: PresignReadInput,
 ): Promise<PresignReadResponse> {
 	console.log({ message: "Presigning read" });
@@ -76,13 +75,3 @@ export async function presignReadHelper(
 		bucket,
 	};
 }
-
-/**
- * Server function wrapper for client-side use via RPC.
- * Calls the presignReadHelper under the hood.
- */
-export const presignRead = createServerFn()
-	.inputValidator((data) => inputSchema.parse(data))
-	.handler(async ({ data }): Promise<PresignReadResponse> => {
-		return presignReadHelper(data);
-	});
