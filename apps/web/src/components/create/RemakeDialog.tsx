@@ -3,6 +3,7 @@ import { createDb } from "@repo/db/client";
 import { actors, assets, storyboards } from "@repo/db/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { eq } from "drizzle-orm";
 import { ChevronRight, Loader2, Play, Plus, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -22,8 +23,8 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getSessionFn } from "@/lib/auth/session";
-import { presignRead } from "@/lib/presign";
+import { getSessionHelper } from "@/lib/auth/session";
+import { presignReadHelper } from "@/lib/presign";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
 
 // Types
@@ -80,8 +81,10 @@ const fetchStoryboardById = createServerFn()
 
 			const storyboard = result[0];
 			const [image, video] = await Promise.all([
-				presignRead({ data: { key: storyboard.previewVideoAssetPosterKey } }),
-				presignRead({ data: { key: storyboard.previewVideoAssetKey } }),
+				presignReadHelper({
+					key: storyboard.previewVideoAssetPosterKey as string,
+				}),
+				presignReadHelper({ key: storyboard.previewVideoAssetKey }),
 			]);
 
 			return {
@@ -98,7 +101,8 @@ const fetchStoryboardById = createServerFn()
 
 // Server function to fetch user's actors
 const fetchActors = createServerFn().handler(async (): Promise<Actor[]> => {
-	const session = await getSessionFn();
+	const headers = getRequestHeaders();
+	const session = await getSessionHelper(headers);
 	const userId = session?.user?.id;
 	if (!userId) {
 		return [];
@@ -123,7 +127,9 @@ const fetchActors = createServerFn().handler(async (): Promise<Actor[]> => {
 
 	return await Promise.all(
 		actorResults.map(async (actor) => {
-			const imageUrl = await presignRead({ data: { key: actor.assetKey } });
+			const imageUrl = await presignReadHelper({
+				key: actor.assetKey as string,
+			});
 			return {
 				id: actor.id,
 				name: actor.name,
