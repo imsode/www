@@ -27,6 +27,10 @@ export async function presignReadHelper(
 	console.log({ message: "Presigning read" });
 	const { key } = inputSchema.parse(input);
 
+	if (!key) {
+		throw new Error("Key is required");
+	}
+
 	if (
 		!env.R2_ACCESS_KEY_ID ||
 		!env.R2_SECRET_ACCESS_KEY ||
