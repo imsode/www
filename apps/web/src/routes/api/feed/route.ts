@@ -109,6 +109,13 @@ export const Route = createFileRoute("/api/feed")({
 						? videoResults.slice(0, PAGE_SIZE)
 						: videoResults;
 
+					// TODO: Remove this after testing
+					console.log({
+						message: "Videos to return",
+						videosToReturn: videosToReturn.length,
+						hasMore,
+					});
+
 					// Transform user videos to FeedVideo format
 					const userFeedVideos: FeedVideo[] = videosToReturn.map((video) => ({
 						id: video.id,
@@ -128,6 +135,12 @@ export const Route = createFileRoute("/api/feed")({
 						isTemplate: false,
 					}));
 
+					// TODO: Remove this after testing
+					console.log({
+						message: "User feed videos",
+						userFeedVideos: userFeedVideos.length,
+					});
+
 					// Fetch storyboard templates to mix into feed (only on first page)
 					let templateVideos: FeedVideo[] = [];
 					if (!cursorParam) {
@@ -144,6 +157,12 @@ export const Route = createFileRoute("/api/feed")({
 								eq(storyboards.previewVideoAssetId, assets.id),
 							);
 
+						// TODO: Remove this after testing
+						console.log({
+							message: "Storyboard results",
+							storyboardResults: storyboardResults.length,
+						});
+
 						templateVideos = await Promise.all(
 							storyboardResults.map(async (sb) => {
 								const [posterUrl, videoUrl] = await Promise.all([
@@ -152,6 +171,13 @@ export const Route = createFileRoute("/api/feed")({
 										: presignRead({ data: { key: sb.assetKey } }),
 									presignRead({ data: { key: sb.assetKey } }),
 								]);
+
+								// TODO: Remove this after testing
+								console.log({
+									message: "Template video",
+									posterUrl: posterUrl.url,
+									videoUrl: videoUrl.url,
+								});
 
 								return {
 									id: `template-${sb.id}`,
