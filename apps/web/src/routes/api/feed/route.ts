@@ -243,7 +243,8 @@ export const Route = createFileRoute("/api/feed")({
 						message: "Failed to fetch feed",
 						errorMessage:
 							error instanceof Error ? error.message : "Unknown error",
-						error,
+						// TODO: Remove this after testing
+						errorStack: error instanceof Error ? error.stack : "Unknown error",
 					});
 					return json({ error: "Failed to fetch feed" }, { status: 500 });
 				}
