@@ -4,7 +4,7 @@ import { assets, storyboards, user, videos } from "@repo/db/schema";
 import { createFileRoute } from "@tanstack/react-router";
 import { json } from "@tanstack/react-start";
 import { and, desc, eq, isNotNull, lt, or } from "drizzle-orm";
-import { presignRead } from "@/lib/presign";
+import { presignReadHelper } from "@/lib/presign";
 
 export type FeedVideo = {
 	id: string;
@@ -167,9 +167,9 @@ export const Route = createFileRoute("/api/feed")({
 							storyboardResults.map(async (sb) => {
 								const [posterUrl, videoUrl] = await Promise.all([
 									sb.posterKey
-										? presignRead({ data: { key: sb.posterKey } })
-										: presignRead({ data: { key: sb.assetKey } }),
-									presignRead({ data: { key: sb.assetKey } }),
+										? presignReadHelper({ key: sb.posterKey })
+										: presignReadHelper({ key: sb.assetKey }),
+									presignReadHelper({ key: sb.assetKey }),
 								]);
 
 								// TODO: Remove this after testing
