@@ -4,10 +4,23 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 import auth from "./auth";
 
 /**
- * Server function to get the current user session.
+ * Pure helper function that retrieves the current user session.
+ * Can be called directly from server-side code (API routes, other server functions).
  *
- * This function accesses request headers to retrieve the session cookie
- * and validate the user's authentication status.
+ * @param headers - Request headers containing session cookie
+ * @returns Session object with user data if authenticated, null otherwise
+ */
+export async function getSessionHelper(headers: Headers) {
+	const session = await auth(env).api.getSession({
+		headers,
+	});
+
+	return session;
+}
+
+/**
+ * Server function wrapper for client-side use via RPC.
+ * Calls the getSessionHelper under the hood.
  *
  * @returns Session object with user data if authenticated, null otherwise
  *
@@ -22,10 +35,6 @@ import auth from "./auth";
 export const getSessionFn = createServerFn({ method: "GET" }).handler(
 	async () => {
 		const headers = getRequestHeaders();
-		const session = await auth(env).api.getSession({
-			headers,
-		});
-
-		return session;
+		return getSessionHelper(headers);
 	},
 );
