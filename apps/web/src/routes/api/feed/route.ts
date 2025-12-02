@@ -51,6 +51,7 @@ export const Route = createFileRoute("/api/feed")({
 		handlers: {
 			GET: async ({ request }) => {
 				try {
+					console.log({ message: "Fetching feed" });
 					const db = createDb(env.HYPERDRIVE.connectionString);
 					const url = new URL(request.url);
 					const cursorParam = url.searchParams.get("cursor");
@@ -209,6 +210,7 @@ export const Route = createFileRoute("/api/feed")({
 						nextCursor,
 					};
 
+					console.log({ message: "Feed fetched successfully" });
 					return json(response);
 				} catch (error) {
 					console.error({
