@@ -4,6 +4,7 @@ import { assets, generations, storyboards } from "@repo/db/schema";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { desc, eq, inArray } from "drizzle-orm";
 import {
 	AlertCircle,
@@ -25,7 +26,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { getSessionFn } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/session";
 import { presignRead } from "@/lib/presign";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,8 @@ type GenerationItem = {
 // Server function to fetch user generations
 const fetchUserGenerations = createServerFn().handler(
 	async (): Promise<GenerationItem[]> => {
-		const session = await getSessionFn();
+		const headers = getRequestHeaders();
+		const session = await getSession(headers);
 		const userId = session?.user?.id;
 		if (!userId) {
 			return [];

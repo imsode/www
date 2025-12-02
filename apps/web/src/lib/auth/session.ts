@@ -10,7 +10,7 @@ import auth from "./auth";
  * @param headers - Request headers containing session cookie
  * @returns Session object with user data if authenticated, null otherwise
  */
-export async function getSessionHelper(headers: Headers) {
+export async function getSession(headers: Headers) {
 	const session = await auth(env).api.getSession({
 		headers,
 	});
@@ -20,7 +20,7 @@ export async function getSessionHelper(headers: Headers) {
 
 /**
  * Server function wrapper for client-side use via RPC.
- * Calls the getSessionHelper under the hood.
+ * Calls the getSession under the hood.
  *
  * @returns Session object with user data if authenticated, null otherwise
  *
@@ -35,6 +35,6 @@ export async function getSessionHelper(headers: Headers) {
 export const getSessionFn = createServerFn({ method: "GET" }).handler(
 	async () => {
 		const headers = getRequestHeaders();
-		return getSessionHelper(headers);
+		return getSession(headers);
 	},
 );

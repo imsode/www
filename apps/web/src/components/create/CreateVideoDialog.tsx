@@ -31,7 +31,7 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getSessionHelper } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/session";
 import { presignRead } from "@/lib/presign";
 import { cn } from "@/lib/utils";
 import type { StartGenerationResponse } from "@/routes/api/generations/route";
@@ -104,7 +104,7 @@ const fetchStoryboards = createServerFn().handler(
 
 const fetchActors = createServerFn().handler(async (): Promise<Actor[]> => {
 	const headers = getRequestHeaders();
-	const session = await getSessionHelper(headers);
+	const session = await getSession(headers);
 	const userId = session?.user?.id;
 	if (!userId) {
 		return [];
