@@ -1,5 +1,6 @@
 import { createDb } from "@repo/db/client";
 import { generations } from "@repo/db/schema";
+import type { GenerationRequest } from "@repo/types";
 import { eq } from "drizzle-orm";
 
 export { VideoGenerationWorkflow } from "./workflow";
@@ -10,18 +11,22 @@ export default {
 
 		for (const message of batch.messages) {
 			try {
-				console.log(`Processing message ${message.id}`, message.body);
-				const { generationId } = message.body as { generationId: string };
+				const { generationRequest } = message.body as {
+					generationRequest: GenerationRequest;
+				};
 
-				if (!generationId) {
-					console.error("Missing generationId in message", message.body);
+				if (!generationRequest) {
+					console.error({
+						message: "Missing generationRequest in message",
+						body: message.body,
+					});
 					message.ack();
 					continue;
 				}
 
 				await env.VIDEO_GENERATION_WORKFLOW.create({
 					params: {
-						generationId,
+						generationRequest,
 					},
 				});
 
@@ -29,11 +34,15 @@ export default {
 				await db
 					.update(generations)
 					.set({ status: "PROCESSING" })
-					.where(eq(generations.id, generationId));
+					.where(eq(generations.id, generationRequest.generationId));
 
 				message.ack();
 			} catch (error) {
-				console.error(`Error processing message ${message.id}`, error);
+				console.error({
+					message: "Error processing message",
+					id: message.id,
+					error,
+				});
 				message.retry();
 			}
 		}

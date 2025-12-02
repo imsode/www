@@ -26,6 +26,9 @@ importers:
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       drizzle-orm:
         specifier: ^0.44.7
         version: 0.44.7(kysely@0.28.8)(postgres@3.4.7)

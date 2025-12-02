@@ -3,12 +3,10 @@ import {
 	type WorkflowEvent,
 	type WorkflowStep,
 } from "cloudflare:workers";
-import { createDb } from "@repo/db/client";
-import { generations } from "@repo/db/schema";
-import { eq } from "drizzle-orm";
+import type { GenerationRequest } from "@repo/types";
 
 export type VideoGenerationWorkflowParams = {
-	generationId: string;
+	generationRequest: GenerationRequest;
 };
 
 // 1. use the template.promot_for_first_frame and user's selfie to create the real first frame by replacing the face in the template.promot_for_first_frame with user's face
@@ -22,20 +20,13 @@ export class VideoGenerationWorkflow extends WorkflowEntrypoint<
 		event: WorkflowEvent<VideoGenerationWorkflowParams>,
 		step: WorkflowStep,
 	) {
-		const { generationId } = event.payload;
+		const { generationRequest } = event.payload;
 
 		await step.do("generate first frame", async () => {
-			const db = createDb(this.env.HYPERDRIVE.connectionString);
-			const [generation] = await db
-				.select()
-				.from(generations)
-				.where(eq(generations.id, generationId));
-
-			if (!generation) {
-				throw new Error(`Generation ${generationId} not found`);
-			}
-
-			const { templateId, userId } = generation;
+			console.log({ message: "Generating first frame", generationRequest });
+			return generationRequest;
 		});
+
+		return generationRequest;
 	}
 }

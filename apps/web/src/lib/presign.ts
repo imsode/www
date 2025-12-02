@@ -23,7 +23,6 @@ export type PresignReadResponse = {
 export async function presignRead(
 	input: PresignReadInput,
 ): Promise<PresignReadResponse> {
-	console.log({ message: "Presigning read" });
 	const { key } = inputSchema.parse(input);
 
 	if (!key) {
@@ -54,18 +53,12 @@ export async function presignRead(
 
 	const objectUrl = `https://${env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}/${encodedKey}`;
 
-	// TODO: Remove this after testing
-	console.log({ message: "Object URL", objectUrl });
-
 	const signed = await aws.sign(objectUrl, {
 		method: "GET",
 		aws: {
 			signQuery: true,
 		},
 	});
-
-	// TODO: Remove this after testing
-	console.log({ message: "Signed object URL", signed });
 
 	return {
 		url: signed.url,

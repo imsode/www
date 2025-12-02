@@ -29,7 +29,15 @@ const config = defineConfig({
 	plugins: [
 		// https://www.answeroverflow.com/m/1434517849027907626 for more info on why we're not using the devtools
 		// devtools(),
-		cloudflare({ viteEnvironment: { name: "ssr" } }),
+		cloudflare({
+			viteEnvironment: { name: "ssr" },
+			configPath: "./wrangler.jsonc",
+			auxiliaryWorkers: [
+				{
+					configPath: "../video-generation-queue-consumer/wrangler.jsonc",
+				},
+			],
+		}),
 		// this is the plugin that enables path aliases
 		viteTsConfigPaths({
 			projects: ["./tsconfig.json"],
