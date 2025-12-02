@@ -19,6 +19,7 @@ export type PresignReadResponse = {
 export const presignRead = createServerFn()
 	.inputValidator((data) => inputSchema.parse(data))
 	.handler(async ({ data }): Promise<PresignReadResponse> => {
+		console.log({ message: "Presigning read" });
 		const { key } = data;
 
 		if (
@@ -45,12 +46,18 @@ export const presignRead = createServerFn()
 
 		const objectUrl = `https://${env.CF_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}/${encodedKey}`;
 
+		// TODO: Remove this after testing
+		console.log({ message: "Object URL", objectUrl });
+
 		const signed = await aws.sign(objectUrl, {
 			method: "GET",
 			aws: {
 				signQuery: true,
 			},
 		});
+
+		// TODO: Remove this after testing
+		console.log({ message: "Signed object URL", signed });
 
 		return {
 			url: signed.url,
